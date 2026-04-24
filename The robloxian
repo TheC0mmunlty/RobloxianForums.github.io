@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Roblox Forum</title>
+  <style>
+    body {
+      background: #d9d9d9;
+      font-family: Arial;
+    }
+
+    .container {
+      width: 600px;
+      margin: 40px auto;
+      background: #f2f2f2;
+      border: 1px solid #999;
+    }
+
+    .header {
+      background: #cfcfcf;
+      padding: 10px;
+      font-weight: bold;
+      border-bottom: 1px solid #999;
+    }
+
+    .new-post {
+      padding: 10px;
+      border-bottom: 1px solid #999;
+    }
+
+    input, textarea {
+      width: 100%;
+      margin-top: 5px;
+      padding: 5px;
+      border: 1px solid #aaa;
+    }
+
+    button {
+      margin-top: 5px;
+      padding: 5px;
+      background: #3b6ea5;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .post {
+      border-top: 1px solid #ccc;
+      padding: 10px;
+      background: white;
+    }
+
+    .username {
+      color: #2b4f8a;
+      font-weight: bold;
+    }
+
+    .message {
+      margin-top: 5px;
+    }
+
+    .reply-btn {
+      margin-top: 5px;
+      font-size: 12px;
+      background: #888;
+    }
+
+    .replies {
+      margin-left: 20px;
+      margin-top: 10px;
+      border-left: 2px solid #ccc;
+      padding-left: 10px;
+    }
+
+    .reply-box {
+      margin-top: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">💬 Roblox-Style Forum (2014)</div>
+
+  <!-- NEW POST -->
+  <div class="new-post">
+    <input id="user" placeholder="Username">
+    <textarea id="msg" placeholder="Write your post..."></textarea>
+    <button onclick="addPost()">Post</button>
+  </div>
+
+  <!-- POSTS -->
+  <div id="posts"></div>
+
+</div>
+
+<script>
+function addPost() {
+  let user = document.getElementById("user").value;
+  let msg = document.getElementById("msg").value;
+
+  let post = document.createElement("div");
+  post.className = "post";
+
+  post.innerHTML = `
+    <div class="username">${user}</div>
+    <div class="message">${msg}</div>
+
+    <button class="reply-btn" onclick="showReply(this)">Reply</button>
+
+    <div class="reply-box" style="display:none;">
+      <input placeholder="Reply username">
+      <input placeholder="Reply message">
+      <button onclick="addReply(this)">Send</button>
+    </div>
+
+    <div class="replies"></div>
+  `;
+
+  document.getElementById("posts").prepend(post);
+}
+
+function showReply(btn) {
+  let box = btn.parentElement.querySelector(".reply-box");
+  box.style.display = box.style.display === "none" ? "block" : "none";
+}
+
+function addReply(btn) {
+  let box = btn.parentElement;
+  let post = box.parentElement;
+
+  let inputs = box.querySelectorAll("input");
+  let user = inputs[0].value;
+  let msg = inputs[1].value;
+
+  let reply = document.createElement("div");
+  reply.innerHTML = `
+    <div class="username">${user}</div>
+    <div class="message">${msg}</div>
+  `;
+
+  post.querySelector(".replies").appendChild(reply);
+
+  inputs[0].value = "";
+  inputs[1].value = "";
+  box.style.display = "none";
+}
+</script>
+
+</body>
+</html>
