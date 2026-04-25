@@ -1,237 +1,258 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Stable Forum System</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROBLOX Forums - 2014</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
-<style>
-body {
-  margin:0;
-  font-family:Arial;
-  background:#dfe5ec;
-}
+  <style>
+    body {
+      font-family: "Tahoma", "Arial", sans-serif;
+      background: #e0e0e0;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
 
-.topbar {
-  background:#3b4f6b;
-  color:white;
-  padding:10px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
+    .header {
+      background: linear-gradient(#003366, #001a33);
+      color: #ffcc00;
+      padding: 18px;
+      text-align: center;
+      border-bottom: 5px solid #ffcc00;
+      font-size: 28px;
+      font-weight: bold;
+      text-shadow: 2px 2px 0 #000;
+    }
 
-.logo {
-  height:30px;
-  cursor:pointer;
-}
+    .nav {
+      background: #003366;
+      padding: 10px;
+      text-align: center;
+    }
 
-.container {
-  width:850px;
-  margin:20px auto;
-}
+    .nav a {
+      color: #ffcc00;
+      margin: 0 18px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 15px;
+    }
 
-.box {
-  background:white;
-  border:1px solid #bbb;
-  padding:10px;
-  margin-bottom:10px;
-}
+    .container {
+      max-width: 980px;
+      margin: 20px auto;
+      background: white;
+      border: 4px solid #003366;
+      box-shadow: 4px 4px 0 #000;
+    }
 
-.post {
-  background:white;
-  border:1px solid #bbb;
-  padding:10px;
-  margin-top:10px;
-}
+    .category {
+      background: #003366;
+      color: #ffcc00;
+      padding: 12px 15px;
+      font-size: 18px;
+      font-weight: bold;
+      border-bottom: 3px solid #ffcc00;
+    }
 
-/* CHAT */
-#chatBox {
-  position:fixed;
-  right:10px;
-  bottom:10px;
-  width:300px;
-  height:350px;
-  background:white;
-  border:2px solid #333;
-  display:flex;
-  flex-direction:column;
-}
+    .thread {
+      padding: 14px 15px;
+      border-bottom: 1px solid #ccc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
 
-#messages {
-  flex:1;
-  overflow:auto;
-  padding:5px;
-}
+    .thread:hover {
+      background: #ffffcc;
+    }
 
-.msg {
-  margin:3px;
-  padding:4px;
-  background:#f1f1f1;
-}
+    .thread-info {
+      flex: 1;
+    }
 
-input, textarea {
-  width:100%;
-  padding:5px;
-}
-</style>
+    .thread-title {
+      font-weight: bold;
+      color: #003366;
+    }
+
+    .thread-author {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .timestamp {
+      color: #666;
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .new-thread-box {
+      margin: 20px;
+      padding: 15px;
+      background: #f9f9f9;
+      border: 3px solid #ffcc00;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 2px solid #003366;
+      font-family: Tahoma;
+    }
+
+    button {
+      background: #003366;
+      color: #ffcc00;
+      border: 3px solid #ffcc00;
+      padding: 10px 20px;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #ffcc00;
+      color: #003366;
+    }
+
+    .logged-in {
+      float: right;
+      color: #ffcc00;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+  </style>
 </head>
-
 <body>
 
-<div class="topbar">
-<img class="logo"
-src="https://cdn.discordapp.com/attachments/1495473511836291142/1497459975067275389/Logo.png">
+  <div class="header">
+    ROBLOX OLD FORUMS - 2014
+  </div>
 
-<span>Stable Forum</span>
-</div>
+  <div class="nav">
+    <a href="#">General Discussion</a>
+    <a href="#">Help & Support</a>
+    <a href="#">Off Topic</a>
+    <a href="#">Suggestions</a>
+    <span class="logged-in">Logged in as: <strong id="username">Loading...</strong></span>
+  </div>
 
-<div class="container">
+  <div class="container">
+    <div class="category">General Discussion</div>
+    
+    <div id="threads-list">
+      <!-- Threads will load here automatically -->
+    </div>
 
-<!-- POSTS -->
-<div class="box">
-<h3>Create Post</h3>
-<textarea id="postInput"></textarea>
-<button onclick="createPost()">Post</button>
-</div>
+    <div class="new-thread-box">
+      <h3 style="margin-top:0; color:#003366;">Create New Thread</h3>
+      <input type="text" id="thread-title" placeholder="Thread Title (be specific!)">
+      <textarea id="thread-content" rows="5" placeholder="Write your message here..."></textarea>
+      <button onclick="createThread()">Post Thread</button>
+    </div>
+  </div>
 
-<div id="postList"></div>
+  <script>
+    // ================== YOUR FIREBASE CONFIG ==================
+    // PASTE YOUR FIREBASE CONFIG HERE (from Firebase console)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY_HERE",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "YOUR_APP_ID"
+    };
 
-</div>
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const database = firebase.database();
 
-<!-- CHAT -->
-<div id="chatBox">
-
-<div style="background:#3b4f6b;color:white;padding:5px;">
-Chat
-</div>
-
-<div id="messages"></div>
-
-<input id="chatInput" placeholder="Message...">
-<button onclick="sendMsg()">Send</button>
-
-</div>
-
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  orderBy,
-  onSnapshot
-} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-
-/* FIREBASE */
-const firebaseConfig = {
-  apiKey: "AIzaSyANfmR8j_Z7mHmSO1GNXGnIGKTdBiU6uiU",
-  authDomain: "testingforum-669a9.firebaseapp.com",
-  projectId: "testingforum-669a9",
-  storageBucket: "testingforum-669a9.firebasestorage.app",
-  messagingSenderId: "685025117821",
-  appId: "1:685025117821:web:12f3c1bca79906a3ded314"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-/* SAFE GLOBALS */
-window.currentUser = "Player";
-window.currentChat = "global";
-
-/* ======================
-   POSTS (FIXED)
-====================== */
-
-window.createPost = async function () {
-
-  const input = document.getElementById("postInput");
-
-  if (!input.value.trim()) return;
-
-  await addDoc(collection(db,"posts"),{
-    text: input.value,
-    user: window.currentUser,
-    time: Date.now()
-  });
-
-  input.value = "";
-  loadPosts();
-};
-
-async function loadPosts() {
-
-  const q = query(collection(db,"posts"), orderBy("time","desc"));
-  const snap = await getDocs(q);
-
-  const list = document.getElementById("postList");
-  list.innerHTML = "";
-
-  snap.forEach(d => {
-    const p = d.data();
-
-    const div = document.createElement("div");
-    div.className = "post";
-
-    div.innerHTML = `<b>${p.user}</b><br>${p.text}`;
-
-    list.appendChild(div);
-  });
-}
-
-loadPosts();
-
-/* ======================
-   CHAT (FIXED)
-====================== */
-
-window.sendMsg = async function () {
-
-  const input = document.getElementById("chatInput");
-
-  if (!input.value.trim()) return;
-
-  await addDoc(collection(db,"messages"),{
-    room: "global",
-    from: window.currentUser,
-    text: input.value,
-    time: Date.now()
-  });
-
-  input.value = "";
-};
-
-function loadChat() {
-
-  const q = query(collection(db,"messages"), orderBy("time"));
-
-  onSnapshot(q, snap => {
-
-    const box = document.getElementById("messages");
-    box.innerHTML = "";
-
-    snap.forEach(d => {
-      const m = d.data();
-
-      if (m.room === "global") {
-        const div = document.createElement("div");
-        div.className = "msg";
-
-        div.innerHTML = `<b>${m.from}</b>: ${m.text}`;
-
-        box.appendChild(div);
+    // Show logged in user
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById("username").textContent = user.displayName || user.email.split('@')[0];
+      } else {
+        document.getElementById("username").textContent = "Not logged in";
       }
     });
 
-    box.scrollTop = box.scrollHeight;
-  });
-}
+    // Load threads in real-time
+    function loadThreads() {
+      const threadsRef = database.ref('general/threads');
+      
+      threadsRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        let html = '';
 
-loadChat();
+        if (data) {
+          Object.keys(data).reverse().forEach(key => {
+            const thread = data[key];
+            html += `
+              <div class="thread" onclick="alert('Thread view coming soon!\\n\\nTitle: ${thread.title}\\nBy: ${thread.author}')">
+                <div class="thread-info">
+                  <div class="thread-title">${thread.title}</div>
+                  <div class="thread-author">Posted by ${thread.author}</div>
+                </div>
+                <div class="timestamp">
+                  ${new Date(thread.timestamp).toLocaleString()}
+                </div>
+              </div>`;
+          });
+        } else {
+          html = '<p style="padding:20px; text-align:center; color:#666;">No threads yet. Be the first to post!</p>';
+        }
 
-</script>
+        document.getElementById('threads-list').innerHTML = html;
+      });
+    }
+
+    // Create new thread
+    function createThread() {
+      const title = document.getElementById('thread-title').value.trim();
+      const content = document.getElementById('thread-content').value.trim();
+
+      if (!title || !content) {
+        alert("Please fill in both title and message!");
+        return;
+      }
+
+      const user = auth.currentUser;
+      if (!user) {
+        alert("You need to be logged in to post!");
+        return;
+      }
+
+      const newThread = {
+        title: title,
+        content: content,
+        author: user.displayName || user.email.split('@')[0],
+        timestamp: Date.now()
+      };
+
+      database.ref('general/threads').push(newThread)
+        .then(() => {
+          document.getElementById('thread-title').value = '';
+          document.getElementById('thread-content').value = '';
+          alert("Thread posted successfully! 🎉");
+        })
+        .catch(error => {
+          alert("Error posting: " + error.message);
+        });
+    }
+
+    // Load threads when page opens
+    window.onload = loadThreads;
+  </script>
 
 </body>
 </html>
