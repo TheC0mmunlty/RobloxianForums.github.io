@@ -2,95 +2,91 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ROBLOX Forum - Admin Edition</title>
+    <title>The Robloxians Forum</title>
     <style>
         body { font-family: Verdana, Arial; background-color: #E1E1E1; margin: 0; padding: 0; }
         header { background: #000; color: white; padding: 12px; display: flex; justify-content: space-between; border-bottom: 3px solid #555; }
         
-        /* 2012 YELLOW ANNOUNCEMENT */
-        #announcement-banner { background: #FFF6CF; border: 1px solid #E6DB55; padding: 10px; text-align: center; font-size: 13px; font-weight: bold; color: #555; margin-bottom: 10px; }
+        #announcement-banner { background: #FFF6CF; border: 1px solid #E6DB55; padding: 10px; text-align: center; font-size: 13px; font-weight: bold; color: #555; display: none; }
 
-        .main-wrapper { width: 950px; margin: 0 auto; background: white; border: 1px solid #888; min-height: 800px; }
+        .main-wrapper { width: 950px; margin: 0 auto; background: white; border: 1px solid #888; min-height: 800px; box-shadow: 4px 4px 0px #888; }
         
-        /* AUTH SECTION */
         .auth-card { width: 400px; margin: 100px auto; border: 1px solid #0055ff; background: #f0f5ff; padding: 20px; text-align: center; }
-        input, select, textarea { width: 90%; padding: 8px; margin: 5px 0; border: 1px solid #999; font-family: Verdana; }
+        input, select, textarea { width: 90%; padding: 8px; margin: 5px 0; border: 1px solid #999; font-family: Verdana; font-size: 12px; }
 
-        /* FORUM CONTENT */
-        .forum-header { background: #ccc; border: 1px solid #999; padding: 8px; font-weight: bold; margin-top: 15px; }
-        .thread-row { border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; font-size: 12px; }
-        .admin-only { background: #ffebeb; border: 2px solid red; padding: 15px; margin-top: 20px; }
+        .forum-header { background: #ccc; border: 1px solid #999; padding: 8px; font-weight: bold; margin-top: 15px; font-size: 13px; }
+        .thread-row { border-bottom: 1px solid #eee; padding: 12px; display: flex; flex-direction: column; font-size: 12px; gap: 5px; }
+        .thread-author { font-size: 10px; color: #777; }
         
-        .btn { background: #ddd; border: 1px solid #777; padding: 5px 10px; cursor: pointer; }
-        .btn-red { background: #ff4444; color: white; }
+        .admin-dashboard { background: #fff4f4; border: 2px dashed #ff0000; padding: 20px; margin: 20px; }
+        
+        .btn { background: #e1e1e1; border: 1px solid #777; padding: 5px 10px; cursor: pointer; font-size: 12px; }
+        .btn:hover { background: #fff; }
+        .btn-admin { background: #ffcc00; font-weight: bold; margin-right: 5px; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div id="announcement-banner">
-    [!] ITrapp Is Gonna hack our site again!
-</div>
+<div id="announcement-banner"></div>
 
 <header>
-    <div style="font-weight:bold;">ROBLOX FORUM</div>
-    <div id="user-display">Guest</div>
+    <div style="font-weight:bold; font-size: 20px; letter-spacing: -1px;">THE ROBLOXIANS FORUM</div>
+    <div id="user-display" style="font-size: 11px; color: #ccc;">Guest</div>
 </header>
 
 <div class="main-wrapper">
 
     <div id="logged-out-view">
         <div class="auth-card">
-            <h3>Login or Register</h3>
-            <input type="text" id="username" placeholder="Username">
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="password" placeholder="Password">
-            <select id="gender">
+            <h3 style="color: #0055ff; margin-top: 0;">Forum Login</h3>
+            <input type="text" id="reg-username" placeholder="Username">
+            <input type="email" id="auth-email" placeholder="Email">
+            <input type="password" id="auth-password" placeholder="Password">
+            <select id="reg-gender">
                 <option value="Boy">Boy</option>
                 <option value="Girl">Girl</option>
             </select>
-            <br><br>
-            <button class="btn" id="loginBtn">Login</button>
-            <button class="btn" id="signupBtn">Sign Up</button>
+            <div style="margin-top: 15px;">
+                <button class="btn" id="loginBtn">Login</button>
+                <button class="btn" id="signupBtn">Sign Up</button>
+            </div>
         </div>
     </div>
 
     <div id="logged-in-view" class="hidden">
-        <div style="padding: 20px;">
-            <h2>Welcome back, <span id="display-name">User</span>!</h2>
-            <button class="btn" id="logoutBtn">Logout</button>
-            <button class="btn" id="adminToggle" style="display:none; background: gold;">Admin Dashboard</button>
+        <div style="background: #eee; padding: 10px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center;">
+            <span id="welcome-text" style="font-weight: bold;">Welcome!</span>
+            <div>
+                <button class="btn btn-admin hidden" id="adminBtn">Admin Panel</button>
+                <button class="btn" id="logoutBtn">Logout</button>
+            </div>
+        </div>
 
-            <div class="forum-header">Post a New Message</div>
-            <div style="padding: 10px; border: 1px solid #ccc;">
-                <textarea id="post-text" placeholder="What's on your mind?"></textarea>
-                <button class="btn" id="submitPost">Post to General</button>
+        <div style="padding: 20px;">
+            <div id="admin-panel" class="admin-dashboard hidden">
+                <h3 style="margin-top:0;">Moderator Tools</h3>
+                <p style="font-size: 11px;">Update the yellow announcement banner:</p>
+                <input type="text" id="admin-msg-input" placeholder="Banner text (Clear to hide)">
+                <button class="btn" id="updateAnnouncement">Update Banner</button>
             </div>
 
-            <div class="forum-header">General Discussion</div>
-            <div id="thread-list">
-                </div>
-        </div>
+            <div class="forum-header">General Discussion - Post Message</div>
+            <div style="padding: 10px; border: 1px solid #ccc; border-top: none;">
+                <textarea id="post-input" placeholder="Share your thoughts..."></textarea>
+                <button class="btn" id="submitPost" style="margin-top:5px; font-weight: bold;">Post Message</button>
+            </div>
 
-        <div id="admin-panel" class="hidden admin-only">
-            <h3>Admin Dashboard (Owner Only)</h3>
-            <p>Manage Users:</p>
-            <input type="text" id="target-user-id" placeholder="User UID">
-            <button class="btn btn-red">Ban Perm</button>
-            <button class="btn">Ban 1 Day</button>
-            <hr>
-            <p>Update Yellow Announcement:</p>
-            <input type="text" id="new-announcement" placeholder="Banner text...">
-            <button class="btn">Update Banner</button>
+            <div class="forum-header">Thread List</div>
+            <div id="thread-display"></div>
         </div>
     </div>
-
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, push, onValue, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyANfmR8j_Z7mHmSO1GNXGnIGKTdBiU6uiU",
@@ -106,70 +102,104 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // --- CHANGE THIS TO YOUR EMAIL ---
+    // --- YOUR PERMISSIONS ---
+    // Change this to YOUR email address to enable Admin Panel
     const ADMIN_EMAIL = "your-email@gmail.com"; 
+
+    let currentUsername = "User";
 
     // AUTH ACTIONS
     document.getElementById('signupBtn').onclick = async () => {
-        const user = document.getElementById('username').value;
-        const em = document.getElementById('email').value;
-        const pw = document.getElementById('password').value;
-        const gen = document.getElementById('gender').value;
-        const res = await createUserWithEmailAndPassword(auth, em, pw);
-        await set(ref(db, 'users/' + res.user.uid), { username: user, gender: gen, email: em });
+        const u = document.getElementById('reg-username').value;
+        const e = document.getElementById('auth-email').value;
+        const p = document.getElementById('auth-password').value;
+        const g = document.getElementById('reg-gender').value;
+        if(!u || !e || !p) return alert("All fields required");
+        
+        try {
+            const res = await createUserWithEmailAndPassword(auth, e, p);
+            await set(ref(db, 'users/' + res.user.uid), { username: u, gender: g, email: e });
+            location.reload();
+        } catch(err) { alert(err.message); }
     };
 
     document.getElementById('loginBtn').onclick = () => {
-        signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value);
+        signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-password').value)
+        .catch(err => alert(err.message));
     };
 
     document.getElementById('logoutBtn').onclick = () => signOut(auth);
 
-    // POSTING ACTION
+    // POSTING
     document.getElementById('submitPost').onclick = async () => {
-        const text = document.getElementById('post-text').value;
-        const user = auth.currentUser;
-        if(!text) return;
-        
-        const postRef = ref(db, 'threads');
-        await push(postRef, {
-            message: text,
-            author: user.email,
-            timestamp: Date.now()
+        const msg = document.getElementById('post-input').value;
+        if(!msg) return;
+        await push(ref(db, 'threads'), {
+            message: msg,
+            author: currentUsername,
+            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
         });
-        document.getElementById('post-text').value = "";
+        document.getElementById('post-input').value = "";
     };
 
-    // UI UPDATES
-    onAuthStateChanged(auth, (user) => {
+    // ADMIN BANNER
+    document.getElementById('updateAnnouncement').onclick = async () => {
+        const msg = document.getElementById('admin-msg-input').value;
+        await set(ref(db, 'site_settings/announcement'), msg);
+        alert("Banner Updated!");
+    };
+
+    // TOGGLE ADMIN PANEL
+    document.getElementById('adminBtn').onclick = () => {
+        document.getElementById('admin-panel').classList.toggle('hidden');
+    };
+
+    // MAIN LOGIC
+    onAuthStateChanged(auth, async (user) => {
         if (user) {
             document.getElementById('logged-out-view').classList.add('hidden');
             document.getElementById('logged-in-view').classList.remove('hidden');
             document.getElementById('user-display').innerText = user.email;
-            
-            if(user.email === ADMIN_EMAIL) {
-                document.getElementById('adminToggle').style.display = "inline-block";
+
+            // Fetch Username
+            const snap = await get(child(ref(db), `users/${user.uid}`));
+            if(snap.exists()) {
+                const data = snap.val();
+                currentUsername = data.username;
+                document.getElementById('welcome-text').innerText = `Welcome back, ${data.username}! [${data.gender}]`;
             }
 
-            // Load Posts
-            onValue(ref(db, 'threads'), (snapshot) => {
-                const list = document.getElementById('thread-list');
-                list.innerHTML = "";
-                snapshot.forEach((child) => {
-                    const data = child.val();
-                    list.innerHTML += `<div class="thread-row"><span>${data.message}</span> <b>By: ${data.author}</b></div>`;
+            // Check if Admin
+            if(user.email === ADMIN_EMAIL) {
+                document.getElementById('adminBtn').classList.remove('hidden');
+            }
+
+            // Realtime Threads
+            onValue(ref(db, 'threads'), (s) => {
+                const div = document.getElementById('thread-display');
+                div.innerHTML = "";
+                s.forEach((child) => {
+                    const post = child.val();
+                    div.innerHTML = `<div class="thread-row"><span>${post.message}</span> <span class="thread-author">By: <b>${post.author}</b> at ${post.time}</span></div>` + div.innerHTML;
                 });
             });
+
+            // Realtime Banner
+            onValue(ref(db, 'site_settings/announcement'), (s) => {
+                const banner = document.getElementById('announcement-banner');
+                if(s.exists() && s.val() !== "") {
+                    banner.innerText = s.val();
+                    banner.style.display = "block";
+                } else {
+                    banner.style.display = "none";
+                }
+            });
+
         } else {
             document.getElementById('logged-out-view').classList.remove('hidden');
             document.getElementById('logged-in-view').classList.add('hidden');
         }
     });
-
-    // Admin Toggle
-    document.getElementById('adminToggle').onclick = () => {
-        document.getElementById('admin-panel').classList.toggle('hidden');
-    };
 </script>
 </body>
 </html>
