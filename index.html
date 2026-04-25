@@ -7,21 +7,21 @@
         body { font-family: Verdana, Arial; background-color: #E1E1E1; margin: 0; padding: 0; }
         header { background: #000; color: white; padding: 12px; display: flex; justify-content: space-between; border-bottom: 3px solid #555; }
         #announcement-banner { background: #FFF6CF; border: 1px solid #E6DB55; padding: 10px; text-align: center; font-size: 13px; font-weight: bold; color: #555; display: none; }
-        .main-wrapper { width: 950px; margin: 0 auto; background: white; border: 1px solid #888; min-height: 800px; box-shadow: 4px 4px 0px #888; }
+        .main-wrapper { width: 950px; margin: 0 auto; background: white; border: 1px solid #888; min-height: 800px; box-shadow: 4px 4px 0px #888; position: relative; }
         .auth-card { width: 400px; margin: 100px auto; border: 1px solid #0055ff; background: #f0f5ff; padding: 20px; text-align: center; }
         input, select, textarea { width: 90%; padding: 8px; margin: 5px 0; border: 1px solid #999; font-family: Verdana; font-size: 12px; }
         .forum-header { background: #ccc; border: 1px solid #999; padding: 8px; font-weight: bold; margin-top: 15px; font-size: 13px; }
-        
-        /* THREAD STYLES */
         .thread-row { border-bottom: 1px solid #eee; padding: 12px; display: flex; justify-content: space-between; align-items: flex-start; font-size: 12px; }
-        .post-content { display: flex; flex-direction: column; gap: 4px; }
-        .thread-author { font-size: 10px; color: #777; }
+        .clickable-name { color: #0055ff; cursor: pointer; text-decoration: underline; font-weight: bold; }
+        .clickable-name:hover { color: #ff0000; }
         
-        .admin-dashboard { background: #fff4f4; border: 2px dashed #ff0000; padding: 20px; margin: 20px; }
+        /* PROFILE MODAL */
+        #profile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 100; justify-content: center; align-items: center; }
+        .profile-card { background: white; padding: 20px; border: 2px solid #555; width: 350px; text-align: center; box-shadow: 5px 5px 0px #000; }
+        .friend-item { font-size: 11px; background: #f9f9f9; padding: 4px; margin: 2px; border: 1px solid #ddd; }
+
         .btn { background: #e1e1e1; border: 1px solid #777; padding: 5px 10px; cursor: pointer; font-size: 11px; }
-        .btn:hover { background: #fff; }
-        .btn-delete { color: #cc0000; border-color: #cc0000; margin-top: 5px; font-weight: bold; }
-        .btn-admin { background: #ffcc00; font-weight: bold; }
+        .btn-red { background: #ff4444; color: white; border-color: #aa0000; font-weight: bold; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -34,17 +34,30 @@
     <div id="user-display" style="font-size: 11px; color: #ccc;">Guest</div>
 </header>
 
+<div id="profile-overlay" onclick="closeProfile(event)">
+    <div class="profile-card" onclick="event.stopPropagation()">
+        <h2 id="p-name" style="margin:0;">User Profile</h2>
+        <p id="p-gender" style="font-size: 12px; color: #666;"></p>
+        <hr>
+        <div style="text-align: left; max-height: 150px; overflow-y: auto;">
+            <strong>Friends List:</strong>
+            <div id="p-friends">No friends added.</div>
+        </div>
+        <hr>
+        <button class="btn" id="addFriendBtn">Add Friend</button>
+        <button class="btn btn-red" id="reportBtn">Report User</button>
+        <button class="btn" onclick="document.getElementById('profile-overlay').style.display='none'">Close</button>
+    </div>
+</div>
+
 <div class="main-wrapper">
     <div id="logged-out-view">
         <div class="auth-card">
-            <h3 style="color: #0055ff; margin: 0 0 10px 0;">Forum Login</h3>
-            <input type="text" id="reg-username" placeholder="Username (For Sign Up)">
+            <h3>Forum Login</h3>
+            <input type="text" id="reg-username" placeholder="Username">
             <input type="email" id="auth-email" placeholder="Email">
             <input type="password" id="auth-password" placeholder="Password">
-            <select id="reg-gender">
-                <option value="Boy">Boy</option>
-                <option value="Girl">Girl</option>
-            </select>
+            <select id="reg-gender"><option value="Boy">Boy</option><option value="Girl">Girl</option></select>
             <div style="margin-top: 15px;">
                 <button class="btn" id="loginBtn">Login</button>
                 <button class="btn" id="signupBtn">Sign Up</button>
@@ -53,25 +66,23 @@
     </div>
 
     <div id="logged-in-view" class="hidden">
-        <div style="background: #eee; padding: 10px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center;">
-            <span id="welcome-text" style="font-weight: bold;">Syncing Profile...</span>
+        <div style="background: #eee; padding: 10px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between;">
+            <span id="welcome-text" style="font-weight: bold;">Syncing...</span>
             <div>
-                <button class="btn btn-admin hidden" id="adminBtn">Admin Panel</button>
+                <button class="btn hidden" id="adminBtn" style="background:#ffcc00">Admin</button>
                 <button class="btn" id="logoutBtn">Logout</button>
             </div>
         </div>
 
         <div style="padding: 20px;">
-            <div id="admin-panel" class="admin-dashboard hidden">
-                <h3>Admin Tools</h3>
-                <p style="font-size:11px;">Update banner or manage posts below.</p>
-                <input type="text" id="admin-msg-input" placeholder="Banner text">
+            <div id="admin-panel" class="hidden" style="border: 2px dashed red; padding: 10px; margin-bottom: 10px;">
+                <strong>Admin Tool:</strong> <input type="text" id="admin-msg-input" placeholder="Banner text">
                 <button class="btn" id="updateAnnouncement">Update Banner</button>
             </div>
 
             <div class="forum-header">General Discussion - Post Message</div>
             <div style="padding: 10px; border: 1px solid #ccc; border-top: none;">
-                <textarea id="post-input" placeholder="What's on your mind?"></textarea>
+                <textarea id="post-input" placeholder="No swearing allowed!"></textarea>
                 <button class="btn" id="submitPost" style="margin-top:5px; font-weight: bold;">Post Message</button>
             </div>
 
@@ -101,15 +112,27 @@
     const db = getDatabase(app);
 
     const ADMIN_EMAIL = "fahid.001x@gmail.com"; 
-    let currentUsername = ""; 
+    let currentUsername = "";
+    let viewingUid = "";
 
-    // SIGN UP
+    // --- SWEAR FILTER ---
+    const badWords = ["fuck", "shit", "ass", "bitch", "crap", "nigger", "retard", "faggot"]; // Add more here
+    const censor = (text) => {
+        let cleaned = text;
+        badWords.forEach(word => {
+            const regex = new RegExp(word, "gi");
+            cleaned = cleaned.replace(regex, "#".repeat(word.length));
+        });
+        return cleaned;
+    };
+
+    // --- AUTH ---
     document.getElementById('signupBtn').onclick = async () => {
         const u = document.getElementById('reg-username').value;
         const e = document.getElementById('auth-email').value;
         const p = document.getElementById('auth-password').value;
         const g = document.getElementById('reg-gender').value;
-        if(!u || !e || !p) return alert("Fill all fields!");
+        if(!u || !e || !p) return alert("Fill all fields");
         try {
             const res = await createUserWithEmailAndPassword(auth, e, p);
             await set(ref(db, 'users/' + res.user.uid), { username: u, gender: g, email: e });
@@ -118,109 +141,109 @@
     };
 
     document.getElementById('loginBtn').onclick = () => {
-        signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-password').value)
-        .catch(err => alert(err.message));
+        signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-password').value).catch(err => alert(err.message));
     };
-
     document.getElementById('logoutBtn').onclick = () => signOut(auth);
 
-    // POSTING (Now saves UID for deletion)
+    // --- POSTING ---
     document.getElementById('submitPost').onclick = async () => {
-        const msg = document.getElementById('post-input').value;
-        if(!msg) return alert("Type something!");
-
-        // If username is broken, fix it
-        if(!currentUsername || currentUsername.includes("@")) {
-            const fix = prompt("Set your forum username:");
-            if(fix) {
-                await update(ref(db, 'users/' + auth.currentUser.uid), { username: fix });
-                currentUsername = fix;
-            } else return;
-        }
+        let msg = document.getElementById('post-input').value;
+        if(!msg) return;
+        
+        // Apply Censor
+        msg = censor(msg);
 
         try {
             await push(ref(db, 'threads'), {
                 message: msg,
                 author: currentUsername,
-                uid: auth.currentUser.uid, // <--- CRITICAL FOR DELETING
+                uid: auth.currentUser.uid,
                 time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
             });
             document.getElementById('post-input').value = "";
-        } catch(err) { alert("Error: " + err.message); }
+        } catch(err) { alert(err.message); }
     };
 
-    // GLOBAL DELETE FUNCTION
-    window.deletePost = (postId) => {
-        if(confirm("Delete this post forever?")) {
-            remove(ref(db, 'threads/' + postId));
+    // --- PROFILE & SOCIAL ---
+    window.openProfile = async (uid) => {
+        viewingUid = uid;
+        const snap = await get(child(ref(db), `users/${uid}`));
+        if(snap.exists()) {
+            const data = snap.val();
+            document.getElementById('p-name').innerText = data.username;
+            document.getElementById('p-gender').innerText = data.gender;
+            document.getElementById('profile-overlay').style.display = 'flex';
+            
+            // Sync Friends
+            onValue(ref(db, `friends/${uid}`), (s) => {
+                const list = document.getElementById('p-friends');
+                list.innerHTML = "";
+                if(s.exists()) {
+                    s.forEach(child => {
+                        list.innerHTML += `<div class="friend-item">⭐ ${child.val().name}</div>`;
+                    });
+                } else { list.innerHTML = "No friends yet."; }
+            });
         }
     };
 
-    // ADMIN TOOLS
-    document.getElementById('updateAnnouncement').onclick = () => {
-        const msg = document.getElementById('admin-msg-input').value;
-        set(ref(db, 'site_settings/announcement'), msg);
+    document.getElementById('addFriendBtn').onclick = async () => {
+        if(viewingUid === auth.currentUser.uid) return alert("Can't friend yourself!");
+        await set(ref(db, `friends/${auth.currentUser.uid}/${viewingUid}`), { name: document.getElementById('p-name').innerText });
+        alert("Friend added to your list!");
     };
-    document.getElementById('adminBtn').onclick = () => document.getElementById('admin-panel').classList.toggle('hidden');
 
-    // MAIN LOGIC
+    document.getElementById('reportBtn').onclick = () => {
+        const reason = prompt("Reason for reporting this user?");
+        if(reason) {
+            push(ref(db, 'reports'), { reported: viewingUid, by: auth.currentUser.uid, reason: reason });
+            alert("User reported to Admin.");
+        }
+    };
+
+    window.deletePost = (id) => { if(confirm("Delete?")) remove(ref(db, 'threads/'+id)); };
+
+    // --- MAIN LOGIC ---
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             document.getElementById('logged-out-view').classList.add('hidden');
             document.getElementById('logged-in-view').classList.remove('hidden');
-            document.getElementById('user-display').innerText = user.email;
-
-            // Fetch Profile
+            
             const snap = await get(child(ref(db), `users/${user.uid}`));
-            if (snap.exists() && snap.val().username) {
-                currentUsername = snap.val().username;
-                document.getElementById('welcome-text').innerText = `Welcome back, ${currentUsername}! [${snap.val().gender || 'User'}]`;
-            } else {
-                currentUsername = user.email;
-                document.getElementById('welcome-text').innerText = `Welcome, ${user.email}`;
-            }
+            currentUsername = snap.exists() ? snap.val().username : user.email;
+            document.getElementById('welcome-text').innerText = `Welcome, ${currentUsername}!`;
 
-            // Admin Check
             const isAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-            if (isAdmin) document.getElementById('adminBtn').classList.remove('hidden');
+            if(isAdmin) document.getElementById('adminBtn').classList.remove('hidden');
 
-            // Sync Posts
             onValue(ref(db, 'threads'), (s) => {
                 const display = document.getElementById('thread-display');
                 display.innerHTML = "";
                 s.forEach((childSnap) => {
                     const post = childSnap.val();
-                    const postId = childSnap.key;
+                    const id = childSnap.key;
+                    const del = (post.uid === user.uid || isAdmin) ? `<button class="btn" onclick="deletePost('${id}')" style="color:red">Delete</button>` : "";
                     
-                    // Show delete button ONLY if you are the author OR you are Admin
-                    const showDelete = (post.uid === user.uid || isAdmin);
-                    const deleteBtn = showDelete ? `<button class="btn btn-delete" onclick="deletePost('${postId}')">Delete</button>` : "";
-
                     const html = `
                         <div class="thread-row">
-                            <div class="post-content">
+                            <div>
+                                <span class="clickable-name" onclick="openProfile('${post.uid}')">${post.author}</span>: 
                                 <span>${post.message}</span>
-                                <span class="thread-author">By: <b>${post.author}</b> at ${post.time || 'now'}</span>
-                                ${deleteBtn}
+                                <div style="font-size:10px; color:#999">${post.time}</div>
                             </div>
+                            ${del}
                         </div>`;
                     display.insertAdjacentHTML('afterbegin', html);
                 });
             });
-
-            // Sync Banner
-            onValue(ref(db, 'site_settings/announcement'), (s) => {
-                const banner = document.getElementById('announcement-banner');
-                if(s.exists() && s.val() !== "") {
-                    banner.innerText = s.val(); banner.style.display = "block";
-                } else banner.style.display = "none";
-            });
-
         } else {
             document.getElementById('logged-out-view').classList.remove('hidden');
             document.getElementById('logged-in-view').classList.add('hidden');
         }
     });
+
+    document.getElementById('adminBtn').onclick = () => document.getElementById('admin-panel').classList.toggle('hidden');
+    document.getElementById('updateAnnouncement').onclick = () => set(ref(db, 'site_settings/announcement'), document.getElementById('admin-msg-input').value);
 </script>
 </body>
 </html>
