@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Social Forum Final System</title>
+<title>Forum System Fixed</title>
 
 <style>
 body {
@@ -10,6 +10,7 @@ body {
   background:#dfe5ec;
 }
 
+/* TOPBAR */
 .topbar {
   background:#3b4f6b;
   color:white;
@@ -24,26 +25,30 @@ body {
   cursor:pointer;
 }
 
-/* ONLINE DOT */
-.onlineDot {
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  background:gray;
-  display:inline-block;
+/* MENU */
+.menu {
+  display:flex;
+  gap:10px;
+  margin-left:20px;
 }
 
-.online {
-  background:#00ff4c;
-  box-shadow:0 0 6px #00ff4c;
+.menu button {
+  padding:5px 10px;
+  cursor:pointer;
 }
 
-/* CONTAINER */
-.container {
+/* SECTIONS */
+.section {
+  display:none;
   width:850px;
   margin:20px auto;
 }
 
+.active {
+  display:block;
+}
+
+/* BOX */
 .box {
   background:white;
   border:1px solid #bbb;
@@ -51,83 +56,112 @@ body {
   margin-bottom:10px;
 }
 
-/* FRIEND / CLAN LIST */
-.item {
-  padding:5px;
-  border-bottom:1px solid #ddd;
-  cursor:pointer;
+/* POSTS */
+.post {
+  background:white;
+  border:1px solid #bbb;
+  padding:10px;
+  margin-top:10px;
 }
 
-.item:hover {
-  background:#eee;
+/* ADMIN */
+#adminPanel {
+  background:#fff3f3;
 }
 
-/* PROFILE PAGE */
-#profilePage {
+/* PROFILE */
+#profile {
   display:none;
   position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:#dfe5ec;
-  padding:20px;
-}
-
-#profileCard {
-  width:400px;
+  top:20%;
+  left:50%;
+  transform:translateX(-50%);
   background:white;
-  padding:15px;
   border:2px solid #333;
+  padding:10px;
+  width:300px;
+  z-index:999;
 }
 
 button { margin-top:5px; }
+input, textarea { width:100%; margin-top:5px; padding:5px; }
 </style>
 </head>
 
 <body>
 
+<!-- TOPBAR -->
 <div class="topbar">
-<img class="logo" src="https://cdn.discordapp.com/attachments/1495473511836291142/1497459975067275389/Logo.png"
-onclick="location.reload()">
 
-Social Network
+<img class="logo"
+src="https://cdn.discordapp.com/attachments/1495473511836291142/1497459975067275389/Logo.png"
+onclick="showSection('postsSection')">
+
+<span>Forum System</span>
+
+<div class="menu">
+  <button onclick="showSection('postsSection')">Posts</button>
+  <button onclick="showSection('friendsSection')">Friends</button>
+  <button onclick="showSection('clansSection')">Clans</button>
+  <button onclick="showSection('groupsSection')">Groups</button>
+  <button onclick="showSection('adminSection')">Admin</button>
 </div>
 
-<div class="container">
+</div>
+
+<!-- POSTS -->
+<div id="postsSection" class="section active">
+
+<div class="box">
+<h3>Create Post</h3>
+<textarea id="msg"></textarea>
+<button onclick="createPost()">Post</button>
+</div>
+
+<div id="posts"></div>
+
+</div>
 
 <!-- FRIENDS -->
+<div id="friendsSection" class="section">
 <div class="box">
-<h3>👥 Friends</h3>
+<h3>Friends</h3>
 <div id="friends"></div>
+</div>
 </div>
 
 <!-- CLANS -->
+<div id="clansSection" class="section">
 <div class="box">
-<h3>⚔ Clans</h3>
-<input id="clanName" placeholder="Create clan name">
+<h3>Clans</h3>
+<input id="clanName" placeholder="Clan name">
 <button onclick="createClan()">Create Clan</button>
 <div id="clanList"></div>
 </div>
+</div>
 
 <!-- GROUPS -->
+<div id="groupsSection" class="section">
 <div class="box">
-<h3>💬 Friend Groups</h3>
+<h3>Groups</h3>
 <div id="groups"></div>
 </div>
-
 </div>
 
-<!-- PROFILE PAGE -->
-<div id="profilePage">
-  <div id="profileCard">
-    <h2 id="pName"></h2>
+<!-- ADMIN -->
+<div id="adminSection" class="section">
+<div class="box" id="adminPanel">
+<h3>Admin Dashboard</h3>
+<textarea id="announcement"></textarea>
+<button onclick="postAnnouncement()">Post Announcement</button>
+</div>
+</div>
 
-    <span class="onlineDot" id="pStatus"></span>
-    <p id="pEmail"></p>
-
-    <button onclick="closeProfile()">Close</button>
-  </div>
+<!-- PROFILE -->
+<div id="profile">
+<h3 id="pName"></h3>
+<p id="pEmail"></p>
+<button onclick="closeProfile()">Close</button>
 </div>
 
 <script type="module">
@@ -137,16 +171,10 @@ import {
   getFirestore,
   collection,
   addDoc,
-  getDocs,
-  setDoc,
-  doc,
-  getDoc
+  getDocs
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-import {
-  getAuth,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 /* FIREBASE */
 const firebaseConfig = {
@@ -164,56 +192,52 @@ const auth = getAuth(app);
 
 let currentUser = null;
 
-/* ONLINE STATUS */
-onAuthStateChanged(auth, async user=>{
-  if(!user) return;
+/* NAV MENU */
+window.showSection = function(id){
+  document.querySelectorAll(".section").forEach(s=>{
+    s.classList.remove("active");
+  });
 
-  currentUser = user;
+  document.getElementById(id).classList.add("active");
+};
 
-  await setDoc(doc(db,"users",user.uid),{
-    email:user.email,
-    online:true
-  },{merge:true});
+/* POSTS FIX */
+window.createPost = async function(){
+  if(!msg.value) return;
 
-  loadFriends();
-  loadClans();
-});
+  await addDoc(collection(db,"posts"),{
+    text:msg.value,
+    user:"Player",
+    time:Date.now()
+  });
 
-/* FRIEND LIST */
-async function loadFriends(){
-  let snap = await getDocs(collection(db,"friends"));
+  msg.value="";
+  loadPosts();
+};
 
-  friends.innerHTML="";
+/* LOAD POSTS */
+async function loadPosts(){
+  let snap = await getDocs(collection(db,"posts"));
+  posts.innerHTML="";
 
   snap.forEach(d=>{
-    let f=d.data();
+    let p=d.data();
 
-    if(f.status==="accepted" &&
-      (f.from===currentUser.email || f.to===currentUser.email)){
+    let div=document.createElement("div");
+    div.className="post";
 
-      let friend = f.from===currentUser.email ? f.to : f.from;
+    div.innerText = p.user+": "+p.text;
 
-      let div=document.createElement("div");
-      div.className="item";
-
-      div.innerHTML = `
-        <span class="onlineDot online"></span>
-        ${friend}
-      `;
-
-      div.onclick=()=>openProfile(friend);
-
-      friends.appendChild(div);
-    }
+    posts.appendChild(div);
   });
 }
+loadPosts();
 
 /* CLANS */
 window.createClan = async function(){
   await addDoc(collection(db,"clans"),{
     name:clanName.value,
-    owner:currentUser.email,
-    members:[currentUser.email]
+    owner:"Player"
   });
 
   loadClans();
@@ -221,77 +245,34 @@ window.createClan = async function(){
 
 async function loadClans(){
   let snap = await getDocs(collection(db,"clans"));
-
   clanList.innerHTML="";
 
   snap.forEach(d=>{
     let c=d.data();
-
     let div=document.createElement("div");
-    div.className="item";
-
-    div.innerHTML=`
-      ⚔ ${c.name} (Owner: ${c.owner})
-    `;
-
-    div.onclick=async()=>{
-      await addDoc(collection(db,"clanJoinRequests"),{
-        clan:c.name,
-        user:currentUser.email,
-        status:"pending"
-      });
-
-      alert("Join request sent");
-    };
+    div.className="post";
+    div.innerText="⚔ "+c.name;
 
     clanList.appendChild(div);
   });
 }
+loadClans();
 
-/* FRIEND GROUPS */
-async function loadGroups(){
-  let snap = await getDocs(collection(db,"friends"));
-
-  groups.innerHTML="";
-
-  let myFriends=[];
-
-  snap.forEach(d=>{
-    let f=d.data();
-    if(f.status==="accepted"){
-      if(f.from===currentUser.email) myFriends.push(f.to);
-      if(f.to===currentUser.email) myFriends.push(f.from);
-    }
-  });
-
-  let div=document.createElement("div");
-  div.className="item";
-  div.innerText="Group Chat ("+myFriends.length+" members)";
-  groups.appendChild(div);
+/* FRIENDS / GROUPS */
+async function loadFriends(){
+  friends.innerHTML="No system connected yet";
 }
+loadFriends();
 
-/* PROFILE PAGE */
-window.openProfile = async function(email){
-  profilePage.style.display="block";
+async function loadGroups(){
+  groups.innerHTML="Group system ready for upgrade";
+}
+loadGroups();
 
-  pName.innerText=email;
-  pEmail.innerText=email;
-
-  pStatus.classList.add("online");
+/* ANNOUNCEMENT */
+window.postAnnouncement = async function(){
+  alert("Admin panel ready (hook for Firebase)");
 };
-
-window.closeProfile = function(){
-  profilePage.style.display="none";
-};
-
-/* LOOP */
-setInterval(()=>{
-  if(currentUser){
-    loadFriends();
-    loadClans();
-    loadGroups();
-  }
-},4000);
 
 </script>
 
