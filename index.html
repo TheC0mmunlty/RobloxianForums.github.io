@@ -47,10 +47,6 @@
       font-size: 16px;
     }
 
-    .nav a:hover {
-      color: white;
-    }
-
     .main-container {
       max-width: 980px;
       margin: 20px auto;
@@ -68,20 +64,16 @@
       border-bottom: 5px solid #ffcc00;
     }
 
-    .new-thread-box {
+    .auth-box, .new-thread-box {
       margin: 20px;
       padding: 18px;
       background: #f8f8f8;
       border: 4px solid #003399;
     }
 
-    .new-thread-box h3 {
-      margin: 0 0 15px 0;
-      color: #003399;
-      font-size: 20px;
-    }
+    h3 { margin: 0 0 15px 0; color: #003399; }
 
-    input[type="text"], textarea {
+    input[type="text"], input[type="email"], input[type="password"], textarea {
       width: 100%;
       padding: 10px;
       margin-bottom: 12px;
@@ -98,6 +90,7 @@
       font-weight: bold;
       font-size: 16px;
       cursor: pointer;
+      margin-right: 10px;
     }
 
     button:hover {
@@ -140,6 +133,10 @@
       color: #ffcc00;
       font-size: 14px;
     }
+
+    .auth-section {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -159,44 +156,106 @@
   <div class="main-container">
     <div class="category-header">General Discussion</div>
 
-    <div class="threads-container" id="threads-list">
-      <!-- Threads load here -->
+    <!-- Auth Box (shows when not logged in) -->
+    <div id="auth-box" class="auth-box">
+      <h3>Sign Up or Login</h3>
+      
+      <input type="email" id="email" placeholder="Email">
+      <input type="password" id="password" placeholder="Password">
+      
+      <button onclick="signUp()">Sign Up</button>
+      <button onclick="login()">Login</button>
+      <button onclick="logout()" style="background:#666; border-color:#666;">Logout</button>
     </div>
 
-    <div class="new-thread-box">
+    <!-- New Thread Box (only shows when logged in) -->
+    <div id="new-thread-box" class="new-thread-box" style="display: none;">
       <h3>Create New Thread</h3>
       <input type="text" id="thread-title" placeholder="Thread Title (be specific!)">
       <textarea id="thread-content" rows="6" placeholder="Write your message here..."></textarea>
       <button onclick="createThread()">Post Thread</button>
+    </div>
+
+    <div class="threads-container" id="threads-list">
+      <!-- Threads load here -->
     </div>
   </div>
 
   <script>
     // ================== PASTE YOUR FIREBASE CONFIG HERE ==================
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "your-project.firebaseapp.com",
-      databaseURL: "https://your-project-default-rtdb.firebaseio.com",
-      projectId: "your-project",
-      storageBucket: "your-project.appspot.com",
-      messagingSenderId: "123456789",
-      appId: "your-app-id"
+      apiKey: "YOUR_API_KEY_HERE",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "123456789012",
+      appId: "YOUR_APP_ID_HERE"
     };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const database = firebase.database();
 
-    // Show username
-    auth.onAuthStateChanged((user) => {
+    // Update UI based on login state
+    function updateUI(user) {
+      const isLoggedIn = !!user;
+      
+      document.getElementById("auth-box").style.display = isLoggedIn ? "none" : "block";
+      document.getElementById("new-thread-box").style.display = isLoggedIn ? "block" : "none";
+      
       if (user) {
         document.getElementById("username").textContent = user.displayName || user.email.split('@')[0];
       } else {
         document.getElementById("username").textContent = "Not logged in";
       }
-    });
+    }
 
-    // Load threads in real-time
+    // Sign Up
+    function signUp() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!email || !password) {
+        alert("Please enter email and password");
+        return;
+      }
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          alert("Account created successfully! You are now logged in.");
+          updateUI(userCredential.user);
+        })
+        .catch(error => alert("Sign up error: " + error.message));
+    }
+
+    // Login
+    function login() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!email || !password) {
+        alert("Please enter email and password");
+        return;
+      }
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          alert("Logged in successfully!");
+          updateUI(userCredential.user);
+        })
+        .catch(error => alert("Login error: " + error.message));
+    }
+
+    // Logout
+    function logout() {
+      auth.signOut().then(() => {
+        alert("Logged out");
+        updateUI(null);
+      });
+    }
+
+    // Load threads
     function loadThreads() {
       const threadsRef = database.ref('general/threads');
       threadsRef.on('value', (snapshot) => {
@@ -207,7 +266,7 @@
           Object.keys(data).reverse().forEach(key => {
             const t = data[key];
             html += `
-              <div class="thread" onclick="alert('Thread: ${t.title}\\n\\nBy: ${t.author}\\n\\n${t.content.substring(0, 150)}...')">
+              <div class="thread" onclick="alert('Thread: ${t.title}\\nBy: ${t.author}\\n\\n${t.content ? t.content.substring(0, 150) : ''}...')">
                 <div class="thread-title">${t.title}</div>
                 <div class="thread-meta">
                   Posted by ${t.author} • ${new Date(t.timestamp).toLocaleString()}
@@ -215,7 +274,7 @@
               </div>`;
           });
         } else {
-          html = '<p style="padding:30px; text-align:center; color:#666;">No threads yet. Be the first to post one!</p>';
+          html = '<p style="padding:30px; text-align:center; color:#666;">No threads yet. Be the first to post!</p>';
         }
 
         document.getElementById('threads-list').innerHTML = html;
@@ -228,18 +287,14 @@
       const content = document.getElementById('thread-content').value.trim();
 
       if (!title || !content) {
-        alert("Please enter both a title and message!");
+        alert("Please enter both title and message!");
         return;
       }
 
       const user = auth.currentUser;
-      if (!user) {
-        alert("You must be logged in to post!");
-        return;
-      }
+      if (!user) return;
 
-      const newThreadRef = database.ref('general/threads').push();
-      newThreadRef.set({
+      database.ref('general/threads').push({
         title: title,
         content: content,
         author: user.displayName || user.email.split('@')[0],
@@ -247,11 +302,12 @@
       }).then(() => {
         document.getElementById('thread-title').value = '';
         document.getElementById('thread-content').value = '';
-        alert("Thread posted! 🎉");
+        alert("Thread posted successfully! 🎉");
       }).catch(err => alert("Error: " + err.message));
     }
 
-    // Start loading threads
+    // Initialize
+    auth.onAuthStateChanged(updateUI);
     window.onload = loadThreads;
   </script>
 </body>
