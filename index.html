@@ -6,53 +6,56 @@
 <style>
 body {
   margin: 0;
-  background: #0a0a0a;
   font-family: Arial;
-  color: white;
+  background: #dfe5ec;
 }
 
 .topbar {
-  background: #111b2e;
+  background: #3b4f6b;
+  color: white;
   padding: 10px;
   font-weight: bold;
 }
 
 .container {
-  width: 800px;
+  width: 850px;
   margin: 20px auto;
 }
 
 .box {
-  background: #151515;
-  border: 1px solid #333;
+  background: #f9f9f9;
+  border: 1px solid #b8c2cc;
   padding: 10px;
   margin-bottom: 10px;
 }
 
-input, textarea, select {
-  width: 100%;
-  margin-top: 5px;
-  padding: 6px;
-  background: black;
-  color: white;
-  border: 1px solid #333;
-}
-
-button {
-  margin-top: 5px;
-  padding: 6px;
-  background: #3b6ea5;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
 .post {
-  background: #121212;
-  border: 1px solid #333;
-  margin: 10px 0;
+  background: white;
+  border: 1px solid #b8c2cc;
   padding: 10px;
+  margin-top: 10px;
 }
+
+.adminBadge {
+  width: 16px;
+  vertical-align: middle;
+}
+
+#profile {
+  display:none;
+  position:fixed;
+  top:20%;
+  left:50%;
+  transform:translateX(-50%);
+  background:white;
+  border:2px solid #333;
+  padding:10px;
+  width:300px;
+  z-index:999;
+}
+
+button { margin-top:5px; }
+input, textarea { width:100%; margin-top:5px; padding:5px; }
 </style>
 </head>
 
@@ -65,30 +68,26 @@ button {
 <!-- LOGIN -->
 <div id="authBox" class="box">
 <h3>Login / Signup</h3>
+<input id="username" placeholder="Username">
 <input id="email" placeholder="Email">
 <input id="pass" type="password" placeholder="Password">
 <button onclick="signup()">Sign Up</button>
 <button onclick="login()">Login</button>
 </div>
 
-<!-- FORUM -->
+<!-- ANNOUNCEMENT -->
+<div class="box" id="announcementBox">
+<h3>📢 Announcements</h3>
+<div id="announcementList"></div>
+</div>
+
+<!-- POST -->
 <div id="forumBox" style="display:none;">
 
 <div class="box">
 <h3>Create Post</h3>
-
-<input id="user" placeholder="Username">
-
-<select id="category">
-  <option>General</option>
-  <option>Help</option>
-  <option>Off-topic</option>
-</select>
-
-<textarea id="msg" placeholder="Write post..."></textarea>
-<button onclick="createPost(user.value, msg.value, category.value)">
-Post
-</button>
+<textarea id="msg"></textarea>
+<button onclick="createPost(msg.value)">Post</button>
 </div>
 
 <div id="posts"></div>
@@ -97,8 +96,21 @@ Post
 
 </div>
 
-<!-- FIREBASE + FORUM LOGIC -->
+<!-- PROFILE -->
+<div id="profile">
+<h3>Profile</h3>
+<p id="pName"></p>
+<p id="pRole"></p>
+
+<button onclick="followUser()">Follow</button>
+<button onclick="openDM()">DM</button>
+<button onclick="banUser()">Ban (Admin)</button>
+<button onclick="closeProfile()">Close</button>
+</div>
+
+<!-- FIREBASE -->
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import {
   getFirestore,
@@ -107,8 +119,8 @@ import {
   query,
   orderBy,
   onSnapshot,
-  deleteDoc,
-  doc
+  doc,
+  setDoc
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 import {
@@ -118,7 +130,7 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
-// 🔥 Firebase config
+/* FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyANfmR8j_Z7mHmSO1GNXGnIGKTdBiU6uiU",
   authDomain: "testingforum-669a9.firebaseapp.com",
@@ -132,75 +144,129 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+/* DATA */
 let currentUser = null;
+let currentProfile = null;
 
-// 🔐 AUTH
-window.signup = () => createUserWithEmailAndPassword(auth, email.value, pass.value);
-window.login = () => signInWithEmailAndPassword(auth, email.value, pass.value);
+const admins = ["fahid.001x@gmail.com"];
 
+/* AUTH */
+window.signup = async () => {
+  const cred = await createUserWithEmailAndPassword(auth, email.value, pass.value);
+
+  await setDoc(doc(db, "users", cred.user.uid), {
+    username: username.value,
+    email: cred.user.email,
+    followers: [],
+    messages: []
+  });
+};
+
+window.login = () =>
+  signInWithEmailAndPassword(auth, email.value, pass.value);
+
+/* USER LOGIN */
 onAuthStateChanged(auth, user => {
   if (user) {
-    currentUser = user.email;
+    currentUser = user;
 
     authBox.style.display = "none";
     forumBox.style.display = "block";
   }
 });
 
-// 💬 CREATE POST
-window.createPost = async function(user, text, category) {
+/* POSTS */
+window.createPost = async function(text) {
   if (!text) return;
 
   await addDoc(collection(db, "posts"), {
-    user,
     text,
-    category,
+    user: username.value,
+    email: currentUser.email,
     time: Date.now()
   });
-
-  msg.value = "";
 };
 
-// 🛡 ADMIN
-const admins = ["you@gmail.com"];
-function isAdmin(email) {
-  return admins.includes(email);
-}
-
-// 🗑 DELETE
-window.deletePost = async function(id) {
-  if (!isAdmin(currentUser)) {
-    alert("No permission");
-    return;
-  }
-
-  await deleteDoc(doc(db, "posts", id));
-};
-
-// 🔥 LOAD POSTS (AUTO LIVE SYSTEM)
+/* LOAD POSTS */
 const q = query(collection(db, "posts"), orderBy("time","desc"));
 
 onSnapshot(q, snap => {
   posts.innerHTML = "";
 
-  snap.forEach(docSnap => {
-    let d = docSnap.data();
-    let id = docSnap.id;
+  snap.forEach(d => {
+    let p = d.data();
+
+    let isAdmin = admins.includes(p.email);
+
+    let badge = isAdmin
+      ? `<img class="adminBadge" src="https://cdn.discordapp.com/attachments/1495473511836291142/1497453590070165584/Untitled.png">`
+      : "";
+
+    let color = isAdmin ? "red" : "black";
 
     let div = document.createElement("div");
     div.className = "post";
 
     div.innerHTML = `
-      <b>${d.user}</b> [${d.category}]<br>
-      ${d.text}
-      <br><br>
-
-      <button onclick="deletePost('${id}')">Delete</button>
+      <b style="color:${color}; cursor:pointer"
+      onclick="openProfile('${p.email}','${p.user}')">
+        ${p.user}
+      </b>
+      ${badge}
+      <br>
+      ${p.text}
     `;
 
     posts.appendChild(div);
   });
 });
+
+/* PROFILE */
+window.openProfile = function(email, name) {
+  currentProfile = email;
+
+  pName.innerText = name;
+  pRole.innerText = admins.includes(email) ? "Admin" : "User";
+
+  profile.style.display = "block";
+};
+
+window.closeProfile = () => profile.style.display = "none";
+
+/* FOLLOW (placeholder) */
+window.followUser = function() {
+  alert("Follow system ready for upgrade");
+};
+
+/* DM (placeholder) */
+window.openDM = function() {
+  alert("DM system ready for upgrade");
+};
+
+/* BAN (admin only) */
+window.banUser = function() {
+  if (!admins.includes(currentUser.email)) return alert("No permission");
+  alert("Ban system hook ready");
+};
+
+/* ANNOUNCEMENTS */
+const annQ = query(collection(db, "announcements"), orderBy("time","desc"));
+
+onSnapshot(annQ, snap => {
+  announcementList.innerHTML = "";
+
+  snap.forEach(d => {
+    let a = d.data();
+
+    let div = document.createElement("div");
+    div.className = "box";
+
+    div.innerHTML = "📢 " + a.text;
+
+    announcementList.appendChild(div);
+  });
+});
+
 </script>
 
 </body>
