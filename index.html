@@ -73,15 +73,15 @@
 
     .welcome-image {
       width: 100%;
-      max-width: 600px;
-      border: 4px solid #003399;
-      margin-bottom: 20px;
+      max-width: 650px;
+      border: 5px solid #003399;
+      margin-bottom: 25px;
     }
 
     input, textarea, select {
       width: 100%;
-      padding: 10px;
-      margin-bottom: 12px;
+      padding: 12px;
+      margin-bottom: 15px;
       border: 3px solid #003399;
       font-family: Tahoma;
       font-size: 15px;
@@ -91,11 +91,11 @@
       background: #003399;
       color: #ffcc00;
       border: 4px solid #ffcc00;
-      padding: 10px 20px;
+      padding: 12px 25px;
       font-weight: bold;
       font-size: 15px;
       cursor: pointer;
-      margin: 5px;
+      margin: 8px;
     }
 
     button:hover { background: #ffcc00; color: #003399; }
@@ -151,7 +151,7 @@
   <div class="main-container">
     <div class="category-header" id="current-category">General Discussion</div>
 
-    <!-- Sign Up / Login -->
+    <!-- Sign Up / Login Screen -->
     <div id="auth-box" class="auth-box">
       <img src="https://i.imgur.com/89Pvm9d.png" class="welcome-image" alt="Welcome">
       <h3>Sign Up</h3>
@@ -218,7 +218,7 @@
     let currentCategory = 'general';
     let currentThreadId = null;
     let currentUser = null;
-    const OWNER_EMAIL = "fahid.001x@gmail.com"; // ← CHANGE TO YOUR EMAIL
+    const OWNER_EMAIL = "fahid.001x@gmail.com";   // ← CHANGE THIS TO YOUR REAL EMAIL
 
     const defaultAvatar = "https://i.imgur.com/R4Qq6S8.png";
 
@@ -283,7 +283,7 @@
       }).then(() => {
         document.getElementById("thread-title").value = '';
         document.getElementById("thread-content").value = '';
-        alert("✅ Thread posted!");
+        alert("✅ Thread posted successfully!");
       });
     }
 
@@ -302,8 +302,7 @@
             <strong style="font-size:18px">${thread.title}</strong><br>
             by ${thread.author}<br><br>
             ${thread.content || ''}
-          </div>
-        `;
+          </div>`;
         loadReplies(threadId);
       });
     }
@@ -362,28 +361,11 @@
     }
 
     function postAnnouncement() {
-      const text = document.getElementById("announcement-input").value.trim();
-      if (!text) return alert("Write something!");
-      alert("Announcement posted! (This will show on main page in future update)");
-      document.getElementById("announcement-input").value = '';
-    }
-
-    function showProfile() {
-      if (currentUser) {
-        const rank = (currentUser.email === OWNER_EMAIL) ? " [ADMIN]" : "";
-        alert(`Profile of ${currentUser.email.split('@')[0]}${rank}\n\nMore features coming soon.`);
-      }
-    }
-
-    function showFriends() {
-      alert("Friends List\n\nThis feature is coming soon!");
+      alert("Announcement feature coming in next update.");
     }
 
     function logout() {
-      auth.signOut().then(() => {
-        alert("Logged out");
-        location.reload();
-      });
+      auth.signOut().then(() => location.reload());
     }
 
     function signUp() {
@@ -411,7 +393,6 @@
         .catch(err => alert("Login Error: " + err.message));
     }
 
-    // Initialize
     auth.onAuthStateChanged((user) => {
       currentUser = user;
       const loggedIn = !!user;
@@ -420,7 +401,6 @@
       if (user) {
         document.getElementById("username-display").textContent = user.email.split('@')[0];
         document.getElementById("logout-btn").style.display = "inline";
-        document.getElementById("admin-link").style.display = (user.email === OWNER_EMAIL) ? "inline" : "none";
       }
     });
 
