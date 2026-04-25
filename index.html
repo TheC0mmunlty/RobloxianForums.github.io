@@ -6,24 +6,19 @@
     <style>
         body { font-family: Verdana, Arial; background-color: #E1E1E1; margin: 0; padding: 0; }
         header { background: #000; color: white; padding: 12px; display: flex; justify-content: space-between; border-bottom: 3px solid #555; }
-        
         #announcement-banner { background: #FFF6CF; border: 1px solid #E6DB55; padding: 10px; text-align: center; font-size: 13px; font-weight: bold; color: #555; display: none; }
-
         .main-wrapper { width: 950px; margin: 0 auto; background: white; border: 1px solid #888; min-height: 800px; box-shadow: 4px 4px 0px #888; }
-        
         .auth-card { width: 400px; margin: 100px auto; border: 1px solid #0055ff; background: #f0f5ff; padding: 20px; text-align: center; }
         input, select, textarea { width: 90%; padding: 8px; margin: 5px 0; border: 1px solid #999; font-family: Verdana; font-size: 12px; }
-
         .forum-header { background: #ccc; border: 1px solid #999; padding: 8px; font-weight: bold; margin-top: 15px; font-size: 13px; }
-        .thread-row { border-bottom: 1px solid #eee; padding: 12px; display: flex; flex-direction: column; font-size: 12px; gap: 5px; }
-        .thread-author { font-size: 10px; color: #777; }
-        
+        .thread-row { border-bottom: 1px solid #eee; padding: 12px; display: flex; flex-direction: column; font-size: 12px; }
+        .thread-author { font-size: 10px; color: #777; margin-top: 4px; }
         .admin-dashboard { background: #fff4f4; border: 2px dashed #ff0000; padding: 20px; margin: 20px; }
-        
         .btn { background: #e1e1e1; border: 1px solid #777; padding: 5px 10px; cursor: pointer; font-size: 12px; }
         .btn:hover { background: #fff; }
-        .btn-admin { background: #ffcc00; font-weight: bold; margin-right: 5px; }
+        .btn-admin { background: #ffcc00; font-weight: bold; }
         .hidden { display: none !important; }
+        textarea { height: 60px; resize: none; }
     </style>
 </head>
 <body>
@@ -36,11 +31,10 @@
 </header>
 
 <div class="main-wrapper">
-
     <div id="logged-out-view">
         <div class="auth-card">
-            <h3 style="color: #0055ff; margin-top: 0;">Forum Login</h3>
-            <input type="text" id="reg-username" placeholder="Username">
+            <h3 style="color: #0055ff; margin: 0 0 10px 0;">Forum Login</h3>
+            <input type="text" id="reg-username" placeholder="Username (New Users)">
             <input type="email" id="auth-email" placeholder="Email">
             <input type="password" id="auth-password" placeholder="Password">
             <select id="reg-gender">
@@ -66,14 +60,13 @@
         <div style="padding: 20px;">
             <div id="admin-panel" class="admin-dashboard hidden">
                 <h3 style="margin-top:0;">Moderator Tools</h3>
-                <p style="font-size: 11px;">Update the yellow announcement banner:</p>
                 <input type="text" id="admin-msg-input" placeholder="Banner text (Clear to hide)">
                 <button class="btn" id="updateAnnouncement">Update Banner</button>
             </div>
 
             <div class="forum-header">General Discussion - Post Message</div>
             <div style="padding: 10px; border: 1px solid #ccc; border-top: none;">
-                <textarea id="post-input" placeholder="Share your thoughts..."></textarea>
+                <textarea id="post-input" placeholder="What's on your mind?"></textarea>
                 <button class="btn" id="submitPost" style="margin-top:5px; font-weight: bold;">Post Message</button>
             </div>
 
@@ -102,8 +95,7 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // --- YOUR PERMISSIONS ---
-    // Change this to YOUR email address to enable Admin Panel
+    // --- OWNER EMAIL PERMISSION ---
     const ADMIN_EMAIL = "your-email@gmail.com"; 
 
     let currentUsername = "User";
@@ -114,12 +106,10 @@
         const e = document.getElementById('auth-email').value;
         const p = document.getElementById('auth-password').value;
         const g = document.getElementById('reg-gender').value;
-        if(!u || !e || !p) return alert("All fields required");
-        
+        if(!u || !e || !p) return alert("Fill everything out!");
         try {
             const res = await createUserWithEmailAndPassword(auth, e, p);
             await set(ref(db, 'users/' + res.user.uid), { username: u, gender: g, email: e });
-            location.reload();
         } catch(err) { alert(err.message); }
     };
 
@@ -134,7 +124,8 @@
     document.getElementById('submitPost').onclick = async () => {
         const msg = document.getElementById('post-input').value;
         if(!msg) return;
-        await push(ref(db, 'threads'), {
+        const threadRef = ref(db, 'threads');
+        await push(threadRef, {
             message: msg,
             author: currentUsername,
             time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
@@ -142,49 +133,52 @@
         document.getElementById('post-input').value = "";
     };
 
-    // ADMIN BANNER
+    // ADMIN TOOLS
     document.getElementById('updateAnnouncement').onclick = async () => {
         const msg = document.getElementById('admin-msg-input').value;
         await set(ref(db, 'site_settings/announcement'), msg);
-        alert("Banner Updated!");
     };
 
-    // TOGGLE ADMIN PANEL
     document.getElementById('adminBtn').onclick = () => {
         document.getElementById('admin-panel').classList.toggle('hidden');
     };
 
-    // MAIN LOGIC
+    // THE CORE LOGIC (LOCKING IN)
     onAuthStateChanged(auth, async (user) => {
+        const outView = document.getElementById('logged-out-view');
+        const inView = document.getElementById('logged-in-view');
+        
         if (user) {
-            document.getElementById('logged-out-view').classList.add('hidden');
-            document.getElementById('logged-in-view').classList.remove('hidden');
+            outView.classList.add('hidden');
+            inView.classList.remove('hidden');
             document.getElementById('user-display').innerText = user.email;
 
-            // Fetch Username
-            const snap = await get(child(ref(db), `users/${user.uid}`));
-            if(snap.exists()) {
-                const data = snap.val();
+            // 1. Fetch User Data
+            const userRef = ref(db);
+            const snapshot = await get(child(userRef, `users/${user.uid}`));
+            if (snapshot.exists()) {
+                const data = snapshot.val();
                 currentUsername = data.username;
                 document.getElementById('welcome-text').innerText = `Welcome back, ${data.username}! [${data.gender}]`;
             }
 
-            // Check if Admin
-            if(user.email === ADMIN_EMAIL) {
+            // 2. Admin Check
+            if (user.email === ADMIN_EMAIL) {
                 document.getElementById('adminBtn').classList.remove('hidden');
             }
 
-            // Realtime Threads
+            // 3. Thread Sync
             onValue(ref(db, 'threads'), (s) => {
-                const div = document.getElementById('thread-display');
-                div.innerHTML = "";
-                s.forEach((child) => {
-                    const post = child.val();
-                    div.innerHTML = `<div class="thread-row"><span>${post.message}</span> <span class="thread-author">By: <b>${post.author}</b> at ${post.time}</span></div>` + div.innerHTML;
+                const display = document.getElementById('thread-display');
+                display.innerHTML = "";
+                s.forEach((childSnap) => {
+                    const post = childSnap.val();
+                    const postHTML = `<div class="thread-row"><span>${post.message}</span><span class="thread-author">By: <b>${post.author}</b> at ${post.time}</span></div>`;
+                    display.insertAdjacentHTML('afterbegin', postHTML);
                 });
             });
 
-            // Realtime Banner
+            // 4. Banner Sync
             onValue(ref(db, 'site_settings/announcement'), (s) => {
                 const banner = document.getElementById('announcement-banner');
                 if(s.exists() && s.val() !== "") {
@@ -194,10 +188,10 @@
                     banner.style.display = "none";
                 }
             });
-
         } else {
-            document.getElementById('logged-out-view').classList.remove('hidden');
-            document.getElementById('logged-in-view').classList.add('hidden');
+            outView.classList.remove('hidden');
+            inView.classList.add('hidden');
+            document.getElementById('user-display').innerText = "Guest";
         }
     });
 </script>
