@@ -149,7 +149,7 @@
       cursor: pointer;
     }
 
-    .clickable { cursor: pointer; color: #003399; }
+    .clickable { cursor: pointer; color: #003399; text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -162,14 +162,14 @@
     <a onclick="showCategory('offtopic')">Off Topic</a>
     <a onclick="showCategory('suggestions')">Suggestions</a>
     <a onclick="showFriends()">Friends</a>
-    <a onclick="showAdminPanel()" id="admin-link" style="display:none;">Admin</a>
+    <a onclick="showAdminPanel()" id="admin-link" style="display:none; color:#ffff00;">Admin</a>
     <span class="logged-in" id="username-display" onclick="showProfile()">Not logged in</span>
   </div>
 
   <div class="main-container">
     <div class="category-header" id="current-category">General Discussion</div>
 
-    <!-- Welcome + Sign Up -->
+    <!-- Sign Up / Login -->
     <div id="auth-box" class="auth-box">
       <img src="https://i.imgur.com/89Pvm9d.png" class="welcome-image" alt="Welcome">
       <h3>Sign Up</h3>
@@ -185,7 +185,7 @@
     </div>
 
     <!-- New Thread -->
-    <div id="new-thread-box" class="new-thread-box" style="display:none;">
+    <div id="new-thread-box" style="display:none; margin:20px; padding:18px; background:#f8f8f8; border:4px solid #003399;">
       <h3>Create New Thread</h3>
       <input type="text" id="thread-title" placeholder="Thread Title">
       <textarea id="thread-content" rows="5" placeholder="Write your message..."></textarea>
@@ -194,31 +194,16 @@
 
     <div id="threads-list"></div>
 
-    <!-- Thread View -->
     <div id="thread-view" style="display:none;">
-      <button onclick="backToList()" style="margin:15px 20px;">← Back</button>
+      <button onclick="backToList()" style="margin:15px 20px;">← Back to List</button>
       <div id="original-post" class="post"></div>
       <div id="replies-list"></div>
 
-      <div class="new-thread-box" style="margin:20px;">
+      <div style="margin:20px; padding:18px; background:#f8f8f8; border:4px solid #003399;">
         <h3>Reply</h3>
-        <textarea id="reply-content" rows="4" placeholder="Write reply..."></textarea>
+        <textarea id="reply-content" rows="4" placeholder="Write your reply..."></textarea>
         <button onclick="postReply()">Post Reply</button>
       </div>
-    </div>
-
-    <!-- Friends Page -->
-    <div id="friends-page" style="display:none; padding:20px;">
-      <h3>Friends List</h3>
-      <p style="color:#666;">(Friend system coming soon - placeholder)</p>
-      <button onclick="backToMain()">Back</button>
-    </div>
-
-    <!-- Admin Panel -->
-    <div id="admin-page" style="display:none; padding:20px;">
-      <h3>Admin Dashboard</h3>
-      <p>Only the owner can delete posts here.</p>
-      <button onclick="backToMain()">Back</button>
     </div>
   </div>
 
@@ -240,30 +225,23 @@
     let currentCategory = 'general';
     let currentThreadId = null;
     let currentUser = null;
-    const OWNER_EMAIL = "fahid.001x@gmail.com"; // ← CHANGE THIS TO YOUR EMAIL
+
+    // CHANGE THIS TO YOUR EMAIL
+    const OWNER_EMAIL = "fahid.001x@gmail.com";   // ← Put your real email here
 
     const defaultAvatar = "https://i.imgur.com/R4Qq6S8.png"; // Your hat avatar
 
-    function getAvatarHtml(avatarUrl) {
-      return `<img src="${avatarUrl || defaultAvatar}" class="avatar" onerror="this.outerHTML='<div class=\'letter-avatar\'>?</div>'">`;
+    function getAvatarHtml() {
+      return `<img src="${defaultAvatar}" class="avatar">`;
     }
 
     function showCategory(cat) {
       currentCategory = cat;
       const names = { general: "General Discussion", help: "Help & Support", offtopic: "Off Topic", suggestions: "Suggestions" };
       document.getElementById("current-category").textContent = names[cat];
-      hideAllPages();
+      document.getElementById("thread-view").style.display = "none";
       document.getElementById("threads-list").style.display = "block";
       loadThreads();
-    }
-
-    function hideAllPages() {
-      document.getElementById("auth-box").style.display = "none";
-      document.getElementById("new-thread-box").style.display = "none";
-      document.getElementById("thread-view").style.display = "none";
-      document.getElementById("friends-page").style.display = "none";
-      document.getElementById("admin-page").style.display = "none";
-      document.getElementById("threads-list").style.display = "none";
     }
 
     function loadThreads() {
@@ -278,7 +256,7 @@
             html += `
               <div class="thread" onclick="openThread('${key}')">
                 <div class="thread-title">${t.title}</div>
-                <div class="thread-meta">Posted by <span class="clickable" onclick="event.stopImmediatePropagation(); showUserProfile('${t.author}')">${t.author}</span></div>
+                <div class="thread-meta">Posted by <span class="clickable" onclick="event.stopImmediatePropagation(); showProfilePopup('${t.author}')">${t.author}</span></div>
               </div>`;
           });
         } else {
@@ -310,7 +288,7 @@
 
     function openThread(threadId) {
       currentThreadId = threadId;
-      hideAllPages();
+      document.getElementById("threads-list").style.display = "none";
       document.getElementById("thread-view").style.display = "block";
 
       database.ref(currentCategory + '/threads/' + threadId).once('value', (snap) => {
@@ -318,10 +296,10 @@
         if (!thread) return;
 
         document.getElementById("original-post").innerHTML = `
-          ${getAvatarHtml(thread.avatar)}
+          ${getAvatarHtml()}
           <div style="margin-left:80px">
             <strong style="font-size:18px">${thread.title}</strong><br>
-            by <span class="clickable" onclick="showUserProfile('${thread.author}')">${thread.author}</span><br><br>
+            by <span class="clickable" onclick="showProfilePopup('${thread.author}')">${thread.author}</span><br><br>
             ${thread.content || ''}
           </div>
         `;
@@ -338,7 +316,7 @@
             const r = replies[key];
             html += `
               <div class="post">
-                ${getAvatarHtml(r.avatar)}
+                ${getAvatarHtml()}
                 <div style="margin-left:80px">
                   <strong>${r.author}</strong> • ${new Date(r.timestamp).toLocaleString()}<br><br>
                   ${r.content}
@@ -352,7 +330,7 @@
 
     function postReply() {
       const content = document.getElementById("reply-content").value.trim();
-      if (!content) return alert("Write something!");
+      if (!content) return alert("Write a reply!");
 
       const user = auth.currentUser;
       if (!user) return alert("You must be logged in!");
@@ -372,10 +350,20 @@
       document.getElementById("threads-list").style.display = "block";
     }
 
+    function showProfilePopup(username) {
+      let isAdmin = (currentUser && currentUser.email === OWNER_EMAIL) ? " [ADMIN]" : "";
+      alert(`Profile of ${username}${isAdmin}\n\nThis will be expanded later with friends, avatar, etc.`);
+    }
+
+    function showProfile() {
+      if (currentUser) {
+        let rank = (currentUser.email === OWNER_EMAIL) ? " [ADMIN]" : "";
+        alert(`Logged in as: ${currentUser.email}${rank}`);
+      }
+    }
+
     function showFriends() {
-      hideAllPages();
-      document.getElementById("friends-page").style.display = "block";
-      document.getElementById("current-category").textContent = "Friends List";
+      alert("Friends List\n\nThis feature is coming soon!");
     }
 
     function showAdminPanel() {
@@ -383,33 +371,16 @@
         alert("You are not the admin!");
         return;
       }
-      hideAllPages();
-      document.getElementById("admin-page").style.display = "block";
-      document.getElementById("current-category").textContent = "Admin Dashboard";
-    }
-
-    function showUserProfile(username) {
-      alert(`Profile of ${username}\n\n(This will be expanded later)`);
-    }
-
-    function showProfile() {
-      if (currentUser) {
-        alert(`Logged in as: ${currentUser.email}\nGender: ${currentUser.gender || 'Not set'}`);
-      }
+      alert("Admin Dashboard\n\nYou can delete posts here in future updates.");
     }
 
     function signUp() {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
-      const gender = document.getElementById("gender").value;
-
       if (!email || !password) return alert("Email and password required!");
-      if (!gender) return alert("Please select Boy or Girl!");
 
       auth.createUserWithEmailAndPassword(email, password)
-        .then(() => {
-          alert("Account created! Please login.");
-        })
+        .then(() => alert("Account created! Please login."))
         .catch(err => alert("Sign Up Error: " + err.message));
     }
 
@@ -435,7 +406,9 @@
       document.getElementById("username-display").textContent = user ? (user.displayName || user.email.split('@')[0]) : "Not logged in";
     });
 
-    window.onload = () => showCategory('general');
+    window.onload = () => {
+      showCategory('general');
+    };
   </script>
 </body>
 </html>
