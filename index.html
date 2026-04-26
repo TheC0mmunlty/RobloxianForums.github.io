@@ -10,12 +10,27 @@
             background-attachment: fixed; background-size: cover; background-position: center; 
         }
         header { background: #000; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #555; }
-        .main-wrapper { width: 900px; margin: 30px auto; background: #fff; border: 1px solid #888; min-height: 800px; box-shadow: 0px 0px 20px rgba(0,0,0,0.5); position: relative; }
         
-        /* CLASSIC ANNOUNCEMENT STYLE */
-        #announcement-container { background: #ffffcc; border-bottom: 1px solid #e6db55; padding: 5px; overflow: hidden; display: none; }
-        .announcement-text { font-size: 12px; color: #333; font-weight: bold; }
+        /* 2012 APRIL FOOLS STYLE BANNER */
+        #announcement-container { 
+            background-color: #ff9800; 
+            border-bottom: 2px solid #b36b00; 
+            width: 100%;
+            padding: 6px 0;
+            text-align: center;
+            display: none; /* Only shows when an admin sets a message */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .announcement-text { 
+            font-family: 'Arial Black', Gadget, sans-serif; 
+            font-size: 14px; 
+            color: #fff; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
+        .main-wrapper { width: 900px; margin: 20px auto; background: #fff; border: 1px solid #888; min-height: 800px; box-shadow: 0px 0px 20px rgba(0,0,0,0.5); position: relative; }
+        
         /* Login Screen Art */
         #logged-out-view {
             background-image: url('https://cdn.discordapp.com/attachments/1395984013587386390/1497797311466569758/login_sign_up.png?ex=69eed3f2&is=69ed8272&hm=5763e511b207221de6dde3aa5ec39e6d79a9fc946c7e120fd94a3119fa121bc5'); 
@@ -35,23 +50,16 @@
         
         .hidden { display: none !important; }
         
-        /* Ban Screen */
-        #ban-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #4a0000 0%, #000000 100%); color: #fff; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .ban-box { border: 2px solid #ff0000; padding: 40px; background: rgba(0,0,0,0.8); border-radius: 10px; }
-
-        /* Profile & Bio */
+        /* Profile & Bio Styles */
         #profile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 100; justify-content: center; align-items: center; }
         .profile-card { background: white; padding: 20px; border: 2px solid #555; width: 350px; text-align: center; border-radius: 8px; }
-        .bio-box { background: #f9f9f9; border: 1px inset #ccc; padding: 10px; margin: 10px 0; font-size: 12px; min-height: 40px; color: #444; text-align: left; }
+        .bio-box { background: #f4f4f4; border: 1px solid #ddd; padding: 10px; margin: 10px 0; font-size: 12px; color: #333; text-align: left; border-radius: 4px; min-height: 50px; }
     </style>
 </head>
 <body>
 
-<div id="ban-view" class="hidden">
-    <div class="ban-box">
-        <h1 style="font-family: Impact; font-size: 70px; color: #ff0000; margin: 0;">BANNED</h1>
-        <p id="ban-reason-text" style="font-size: 24px; color: #fff; font-weight: bold; margin: 20px 0;"></p>
-    </div>
+<div id="announcement-container">
+    <div class="announcement-text" id="announcement-display"></div>
 </div>
 
 <header>
@@ -60,10 +68,6 @@
 </header>
 
 <div class="main-wrapper">
-    <div id="announcement-container">
-        <marquee class="announcement-text" id="announcement-display"></marquee>
-    </div>
-
     <div id="logged-out-view" class="hidden">
         <div class="auth-card">
             <h2>The Robloxians</h2>
@@ -86,21 +90,21 @@
 
         <div id="admin-panel" class="hidden" style="border: 2px dashed orange; padding: 15px; margin: 15px; background: #fffdf0;">
             <strong>Staff Controls</strong><br>
-            <input type="text" id="target-uid" placeholder="Target UID">
-            <input type="text" id="announce-text" placeholder="Announcement Message" style="width: 80%;">
+            <input type="text" id="announce-text" placeholder="Set Announcement (2012 Style)" style="width: 80%;">
             <div style="margin-top: 10px;">
-                <button class="btn btn-admin" id="postAnnounce">Post Announcement</button>
-                <button class="btn btn-danger" id="clearAnnounce">Clear</button> |
-                <button class="btn btn-danger" id="applyBan">Ban</button>
-                <button class="btn btn-admin" id="applyAdmin">Admin</button>
-                <button class="btn" id="applyUnrank">Unrank</button>
+                <button class="btn btn-admin" id="postAnnounce">Update Banner</button>
+                <button class="btn btn-danger" id="clearAnnounce">Remove Banner</button>
             </div>
+            <hr>
+            <input type="text" id="target-uid" placeholder="Target UID">
+            <button class="btn btn-danger" id="applyBan">Ban</button>
+            <button class="btn btn-admin" id="applyAdmin">Promote</button>
         </div>
 
         <div style="padding: 15px;">
-            <div class="forum-header">Forum Feed</div>
-            <textarea id="post-input" placeholder="Say something..."></textarea>
-            <button class="btn btn-admin" id="submitPost" style="margin-top:8px;">Post</button>
+            <div class="forum-header">Discussion Board</div>
+            <textarea id="post-input" placeholder="What's on your mind?"></textarea>
+            <button class="btn btn-admin" id="submitPost" style="margin-top:8px;">Post Message</button>
             <div id="thread-display"></div>
         </div>
     </div>
@@ -141,9 +145,7 @@
         if (user) {
             const banSnap = await get(child(ref(db), `bans/${user.uid}`));
             if(banSnap.exists()){
-                document.getElementById('logged-in-view').classList.add('hidden');
-                document.getElementById('ban-view').classList.remove('hidden');
-                document.getElementById('ban-reason-text').innerText = "Reason: " + banSnap.val().reason;
+                document.body.innerHTML = `<div style="background:black; color:white; height:100vh; display:flex; align-items:center; justify-content:center; flex-direction:column;"><h1>BANNED</h1><p>Reason: ${banSnap.val().reason}</p></div>`;
                 return;
             }
             document.getElementById('logged-in-view').classList.remove('hidden');
@@ -157,12 +159,12 @@
                 document.getElementById('adminBtn').classList.remove('hidden');
             }
 
-            // Sync Classic Announcement
+            // Sync the 2012 Banner
             onValue(ref(db, 'announcement'), (s) => {
                 const container = document.getElementById('announcement-container');
                 const display = document.getElementById('announcement-display');
                 if(s.exists() && s.val().text) {
-                    display.innerText = "NOTICE: " + s.val().text;
+                    display.innerText = s.val().text;
                     container.style.display = "block";
                 } else { container.style.display = "none"; }
             });
@@ -196,14 +198,14 @@
             const d = snap.val();
             document.getElementById('p-name').innerText = d.username;
             document.getElementById('p-id').innerText = "Forum ID: #" + (d.player_id || "???");
-            document.getElementById('p-bio').innerText = d.bio || "No bio set.";
+            document.getElementById('p-bio').innerText = d.bio || "This user is too mysterious for a bio.";
             document.getElementById('profile-overlay').style.display = 'flex';
             
             const editBtn = document.getElementById('edit-bio-btn');
             if(uid === auth.currentUser.uid) {
                 editBtn.classList.remove('hidden');
                 editBtn.onclick = () => {
-                    const newBio = prompt("Enter your new bio:", d.bio || "");
+                    const newBio = prompt("What's your story?", d.bio || "");
                     if(newBio !== null) {
                         update(ref(db, `users/${uid}`), { bio: newBio });
                         document.getElementById('p-bio').innerText = newBio;
