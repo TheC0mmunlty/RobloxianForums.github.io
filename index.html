@@ -172,43 +172,36 @@
         });
     }
 
-    // THE CRITICAL FIX IS HERE
+    // FIXED LOADTHREADS: No more white screen, no more "pushing"
     async function loadThreads() {
         onValue(ref(db, 'threads'), async (snapshot) => {
             const displayArea = document.getElementById('thread-display');
-            
-            // 1. CLEAR COMPLETELY FIRST
-            displayArea.innerHTML = ""; 
+            displayArea.innerHTML = ""; // Clear list
 
-            let threadData = [];
-            snapshot.forEach((child) => {
-                threadData.push({ id: child.key, ...child.val() });
+            if (!snapshot.exists()) return;
+
+            let threads = [];
+            snapshot.forEach(childSnap => {
+                threads.push({ id: childSnap.key, ...childSnap.val() });
             });
-            threadData.reverse();
+            threads.reverse();
 
-            // 2. Build everything in a temporary variable to prevent "flickering" or "pushing"
-            let htmlBuffer = "";
-
-            for (let post of threadData) {
-                const userRef = await get(child(ref(db), `users/${post.uid}`));
-                const uD = userRef.val();
+            for (let post of threads) {
+                const uSnap = await get(child(ref(db), `users/${post.uid}`));
+                const uD = uSnap.val();
                 
                 let displayColor = "#0055ff";
                 if(uD && uD.themeColor) displayColor = uD.themeColor;
                 else if(uD && uD.email && uD.email.toLowerCase() === OWNER_EMAIL) displayColor = "#FF0000";
 
-                const delBtn = isStaff ? `<button class="btn-danger" style="padding:2px 5px; font-size:9px;" onclick="deletePost('${post.id}', '${post.author}', '${post.message}')">DEL</button>` : "";
-
-                htmlBuffer += `
-                    <div class="thread-row">
-                        <div><span class="clickable-name" style="color:${displayColor}" onclick="openProfile('${post.uid}')">${post.author}</span>: ${post.message}</div>
-                        ${delBtn}
-                    </div>
+                const row = document.createElement('div');
+                row.className = 'thread-row';
+                row.innerHTML = `
+                    <div><span class="clickable-name" style="color:${displayColor}" onclick="openProfile('${post.uid}')">${post.author}</span>: ${post.message}</div>
+                    ${isStaff ? `<button class="btn-danger" style="padding:2px 5px; font-size:9px;" onclick="deletePost('${post.id}', '${post.author}', '${post.message}')">DEL</button>` : ""}
                 `;
+                displayArea.appendChild(row);
             }
-            
-            // 3. SET THE FINAL HTML ONCE
-            displayArea.innerHTML = htmlBuffer;
         });
     }
 
