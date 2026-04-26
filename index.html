@@ -4,28 +4,68 @@
     <meta charset="UTF-8">
     <title>The Robloxians Forum</title>
     <style>
-        body { font-family: Verdana, Geneva, sans-serif; margin: 0; padding: 0; background-color: #000; background-image: url('https://wallpapercave.com/wp/wp9084955.jpg'); background-attachment: fixed; background-size: cover; background-position: center; }
-        header { background: #000; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #555; }
-        .main-wrapper { width: 950px; margin: 30px auto; background: white; border: 1px solid #888; min-height: 800px; box-shadow: 4px 4px 0px rgba(0,0,0,0.5); position: relative; }
+        body { 
+            font-family: Verdana, Geneva, sans-serif; 
+            margin: 0; padding: 0; 
+            background-color: #000; 
+            /* FIXED BACKGROUND */
+            background-image: url('https://wallpapercave.com/wp/wp9084955.jpg'); 
+            background-attachment: fixed; 
+            background-size: cover; 
+            background-position: center; 
+        }
+
+        header { 
+            background: #000; 
+            color: white; 
+            padding: 10px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 3px solid #555; 
+        }
+
+        /* FIXED CENTERED LAYOUT */
+        .main-wrapper { 
+            width: 900px; 
+            margin: 30px auto; 
+            background: #fff; 
+            border: 1px solid #888; 
+            min-height: 800px; 
+            box-shadow: 0px 0px 20px rgba(0,0,0,0.5); 
+            position: relative; 
+            overflow: hidden;
+        }
+
         #announcement-banner { background: #FF8C00; border-bottom: 2px solid #CC7000; padding: 10px; text-align: center; font-size: 13px; font-weight: bold; color: white; display: none; }
+        
         .auth-card { width: 400px; margin: 80px auto; border: 1px solid #0055ff; background: #f0f5ff; padding: 20px; text-align: center; }
+        
         input, select, textarea { width: 90%; padding: 6px; margin: 5px 0; border: 1px solid #999; font-family: Verdana; font-size: 12px; }
-        .forum-header { background: #ccc; color: #000; padding: 6px; font-weight: bold; margin-top: 15px; font-size: 13px; border: 1px solid #999; }
-        .thread-row { border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; align-items: flex-start; font-size: 12px; background: #fff; }
+        
+        .forum-header { background: #ccc; color: #000; padding: 8px; font-weight: bold; margin-top: 15px; font-size: 13px; border: 1px solid #999; border-left: none; border-right: none; }
+        
+        .thread-row { border-bottom: 1px solid #eee; padding: 12px; display: flex; justify-content: space-between; align-items: flex-start; font-size: 12px; background: #fff; }
+        
         .clickable-name { color: #0055ff; cursor: pointer; text-decoration: underline; font-weight: bold; }
-        .btn { background: #e1e1e1; border: 1px solid #777; padding: 4px 8px; cursor: pointer; font-size: 11px; font-family: Verdana; }
-        .btn-admin { background: #ffcc00; font-weight: bold; }
+        
+        .btn { background: #e1e1e1; border: 1px solid #777; padding: 4px 10px; cursor: pointer; font-size: 11px; font-family: Verdana; box-shadow: 1px 1px 0px #fff inset; }
+        .btn:active { background: #ccc; box-shadow: 1px 1px 0px #888 inset; }
+        .btn-admin { background: #ffcc00; font-weight: bold; border-color: #b89600; }
         .btn-danger { background: #ff4444; color: white; border: 1px solid #800; }
+        
         .hidden { display: none !important; }
+
         #profile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; z-index: 100; justify-content: center; align-items: center; }
         .profile-card { background: white; padding: 20px; border: 2px solid #555; width: 350px; text-align: center; box-shadow: 5px 5px 0px #000; }
-        #ban-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #900; color: #fff; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; font-family: 'Arial Black', sans-serif; }
+        
+        #ban-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #900; color: #fff; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
     </style>
 </head>
 <body>
 
 <div id="ban-view" class="hidden">
-    <h1>BANNED</h1>
+    <h1 style="font-family: Arial Black; font-size: 40px;">BANNED</h1>
     <p id="ban-reason" style="font-size: 20px;"></p>
 </div>
 
@@ -39,7 +79,7 @@
 <div id="profile-overlay">
     <div class="profile-card">
         <h2 id="p-name" style="margin: 0; font-size: 18px;">User Profile</h2>
-        <p id="p-id" style="font-size: 11px; color: #d00; font-weight: bold; margin: 2px 0;"></p> 
+        <p id="p-id" style="font-size: 12px; color: #d00; font-weight: bold; margin: 4px 0;"></p> 
         <p id="p-gender" style="color: #666; font-size: 12px;"></p>
         <hr>
         <div style="text-align: left; max-height: 100px; overflow-y: auto; font-size: 12px;">
@@ -55,21 +95,21 @@
 <div class="main-wrapper">
     <div id="logged-out-view" class="hidden">
         <div class="auth-card">
-            <h3>Login / Signup</h3>
+            <h3 style="margin-top:0;">Login / Signup</h3>
             <input type="text" id="reg-username" placeholder="Username">
             <input type="email" id="auth-email" placeholder="Email">
             <input type="password" id="auth-password" placeholder="Password">
             <select id="reg-gender"><option value="Boy">Boy</option><option value="Girl">Girl</option></select>
             <div style="margin-top:15px;">
                 <button class="btn" id="loginBtn">Login</button>
-                <button class="btn" id="signupBtn">Sign Up</button>
+                <button class="btn" id="signupBtn" style="font-weight:bold;">Sign Up</button>
             </div>
         </div>
     </div>
 
     <div id="logged-in-view" class="hidden">
-        <div style="background: #eee; padding: 8px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center;">
-            <span id="welcome-text" style="font-size: 11px; font-weight: bold;">Syncing...</span>
+        <div style="background: #e1e1e1; padding: 8px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center;">
+            <span id="welcome-text" style="font-size: 11px; font-weight: bold;">Loading Profile...</span>
             <div>
                 <button class="btn btn-admin hidden" id="adminBtn">Admin Panel</button>
                 <button class="btn" id="logoutBtn">Logout</button>
@@ -77,25 +117,30 @@
         </div>
 
         <div id="admin-panel" class="hidden" style="border: 2px dashed orange; padding: 15px; margin: 15px; background: #fffdf0;">
-            <strong style="color: #e67e22; font-size: 12px;">Admin Management</strong><br>
-            <div style="font-size: 11px;">
-                <strong>Active Reports:</strong><div id="report-list" style="max-height: 80px; overflow-y: auto; background: #fff; border: 1px solid #ddd; padding: 5px;"></div>
-                <hr>
-                <strong>Admin Tool (Paste UID):</strong><br>
-                <input type="text" id="target-uid" placeholder="User UID" style="width: 80%;"><br>
+            <strong style="color: #e67e22; font-size: 12px;">Admin Management Console</strong><br>
+            <div style="font-size: 11px; margin-top:10px;">
+                <strong>Input Target UID:</strong><br>
+                <input type="text" id="target-uid" placeholder="Paste UID here" style="width: 80%;"><br>
                 <button class="btn btn-admin" id="applyRank">Rank Admin</button>
                 <button class="btn" id="removeRank">Unrank</button>
-                <button class="btn btn-danger" id="applyBan">Ban (Perm)</button>
+                <button class="btn btn-danger" id="applyBan">Perm Ban</button>
+            </div>
+            <hr>
+            <div style="font-size: 11px;">
+                <strong>User Reports:</strong>
+                <div id="report-list" style="max-height: 80px; overflow-y: auto; background: #fff; border: 1px solid #ddd; padding: 5px;"></div>
             </div>
         </div>
 
         <div style="padding: 15px;">
-            <div class="forum-header">General Discussion</div>
-            <div style="padding: 10px; border: 1px solid #ccc; border-top: none; background: #fff;">
-                <textarea id="post-input" placeholder="Write a post..." style="height: 50px;"></textarea>
-                <button class="btn" id="submitPost" style="margin-top:5px; font-weight: bold;">Post Message</button>
+            <div class="forum-header">General Discussion - Post Message</div>
+            <div style="padding: 15px; border: 1px solid #ccc; border-top: none; background: #f9f9f9;">
+                <textarea id="post-input" placeholder="No swearing! Filter is active." style="height: 60px; width: 96%;"></textarea><br>
+                <button class="btn" id="submitPost" style="margin-top:8px; font-weight: bold;">Post Message</button>
             </div>
-            <div id="thread-display" style="margin-top: 10px; border: 1px solid #ccc; border-top: none;"></div>
+            
+            <div class="forum-header" style="margin-top:20px;">Thread List</div>
+            <div id="thread-display" style="border: 1px solid #ccc; border-top: none; background: #fff;"></div>
         </div>
     </div>
 </div>
@@ -133,13 +178,14 @@
 
             const snap = await get(child(ref(db), `users/${user.uid}`));
             const userData = snap.val();
-            currentUsername = userData.username;
+            currentUsername = userData ? userData.username : "Member";
             
-            document.getElementById('welcome-text').innerText = "Logged in as: " + currentUsername;
+            document.getElementById('welcome-text').innerText = "Welcome, " + currentUsername;
+            document.getElementById('user-display').innerText = user.email;
             document.getElementById('logged-in-view').classList.remove('hidden');
             document.getElementById('logged-out-view').classList.add('hidden');
 
-            const isAdmin = (user.email.toLowerCase() === OWNER_EMAIL.toLowerCase()) || (userData.rank === "admin");
+            const isAdmin = (user.email.toLowerCase() === OWNER_EMAIL.toLowerCase()) || (userData && userData.rank === "admin");
             if(isAdmin) {
                 document.getElementById('adminBtn').classList.remove('hidden');
                 loadReports();
@@ -151,24 +197,23 @@
         }
     });
 
-    // SIGNUP STARTING AT ID: 1
     document.getElementById('signupBtn').onclick = async () => {
         const u = document.getElementById('reg-username').value.trim();
         const e = document.getElementById('auth-email').value.trim();
         const p = document.getElementById('auth-password').value;
         const g = document.getElementById('reg-gender').value;
 
-        if(!u || !e || !p) return alert("Fill all fields.");
+        if(!u || !e || !p) return alert("Please fill all fields!");
 
         try {
             const userQuery = query(ref(db, 'users'), orderByChild('username'), equalTo(u));
             const snapshot = await get(userQuery);
-            if (snapshot.exists()) return alert("This username is taken!");
+            if (snapshot.exists()) return alert("Username already taken!");
 
-            // COUNTER STARTS AT 0, SO FIRST USER IS 1
+            // BUILDERMAN ID LOGIC
             const idRef = ref(db, 'global_id_counter');
-            const result = await runTransaction(idRef, (currentValue) => {
-                return (currentValue || 0) + 1;
+            const result = await runTransaction(idRef, (count) => {
+                return (count || 0) + 1;
             });
             const newId = result.snapshot.val();
 
@@ -193,23 +238,22 @@
 
             onValue(ref(db, `friends/${uid}`), (s) => {
                 const list = document.getElementById('p-friends');
-                list.innerHTML = s.exists() ? "" : "None";
+                list.innerHTML = s.exists() ? "" : "No friends yet.";
                 s.forEach(f => { list.innerHTML += `<div>⭐ ${f.val().name}</div>`; });
             });
         }
     };
 
-    // ADMIN
-    document.getElementById('applyRank').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value}`), { rank: "admin" });
-    document.getElementById('removeRank').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value}`), { rank: "member" });
-    document.getElementById('applyBan').onclick = () => set(ref(db, `bans/${document.getElementById('target-uid').value}`), { reason: "Banned by Admin", expiry: 0 });
+    document.getElementById('applyRank').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value}`), { rank: "admin" }).then(() => alert("Rank Updated!"));
+    document.getElementById('removeRank').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value}`), { rank: "member" }).then(() => alert("Rank Removed."));
+    document.getElementById('applyBan').onclick = () => set(ref(db, `bans/${document.getElementById('target-uid').value}`), { reason: "Terminated by Admin" }).then(() => alert("User Banned."));
 
     function loadReports() {
         onValue(ref(db, 'reports'), (s) => {
             const list = document.getElementById('report-list'); list.innerHTML = "";
             s.forEach(c => {
                 const r = c.val();
-                list.innerHTML += `<div style="padding:2px; border-bottom:1px solid #eee;">⚠️ ${r.reason} <button class="btn" style="font-size:9px;" onclick="document.getElementById('target-uid').value='${r.reported}'">Select</button></div>`;
+                list.innerHTML += `<div style="padding:4px; border-bottom:1px solid #eee;">⚠️ ${r.reason} <button class="btn" style="font-size:9px;" onclick="document.getElementById('target-uid').value='${r.reported}'">Select</button></div>`;
             });
         });
     }
@@ -219,7 +263,7 @@
             const d = document.getElementById('thread-display'); d.innerHTML = "";
             s.forEach(c => {
                 const p = c.val();
-                const del = (p.uid === auth.currentUser.uid || isAdmin) ? `<button class="btn" onclick="remove(ref(db,'threads/${c.key}'))" style="color:red; border:none; background:none;">[x]</button>` : "";
+                const del = (p.uid === auth.currentUser.uid || isAdmin) ? `<button class="btn" onclick="remove(ref(db,'threads/${c.key}'))" style="color:red; border:none; background:none; cursor:pointer;">[x]</button>` : "";
                 d.insertAdjacentHTML('afterbegin', `<div class="thread-row"><div><span class="clickable-name" onclick="openProfile('${p.uid}')">${p.author}</span>: <span>${p.message}</span></div>${del}</div>`);
             });
         });
