@@ -12,83 +12,68 @@
         header { background: #000; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #555; }
         .main-wrapper { width: 900px; margin: 30px auto; background: #fff; border: 1px solid #888; min-height: 800px; box-shadow: 0px 0px 20px rgba(0,0,0,0.5); position: relative; }
         
-        /* Rank Styles */
-        .owner-name { color: #FF0000 !important; font-weight: bold; }
-        .rank-icon { width: 16px; height: 16px; vertical-align: middle; margin-right: 5px; }
-        
-        /* LOGIN/SIGNUP - Using your Fishing Boat Art! */
+        /* Announcement Bar */
+        #announcement-bar { background: #0055ff; color: white; padding: 10px; text-align: center; font-size: 13px; font-weight: bold; border-bottom: 2px solid #0033aa; display: none; }
+
+        /* Login Screen Art */
         #logged-out-view {
             background-image: url('https://cdn.discordapp.com/attachments/1395984013587386390/1497797311466569758/login_sign_up.png?ex=69eed3f2&is=69ed8272&hm=5763e511b207221de6dde3aa5ec39e6d79a9fc946c7e120fd94a3119fa121bc5'); 
-            background-size: cover;
-            background-position: center;
-            min-height: 800px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background-size: cover; background-position: center; min-height: 800px; display: flex; align-items: center; justify-content: center;
         }
 
-        .auth-card { width: 380px; border: 4px solid #0055ff; background: rgba(255, 255, 255, 0.95); padding: 25px; text-align: center; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .auth-card { width: 380px; border: 4px solid #0055ff; background: rgba(255, 255, 255, 0.95); padding: 25px; text-align: center; border-radius: 15px; }
         input, select, textarea { width: 90%; padding: 8px; margin: 6px 0; border: 1px solid #999; font-size: 13px; border-radius: 4px; }
         .forum-header { background: #ccc; padding: 8px; font-weight: bold; margin-top: 15px; font-size: 13px; border: 1px solid #999; }
         .thread-row { border-bottom: 1px solid #eee; padding: 12px; display: flex; justify-content: space-between; font-size: 12px; background: #fff; align-items: center; }
         .clickable-name { color: #0055ff; cursor: pointer; text-decoration: underline; font-weight: bold; }
+        .owner-name { color: #FF0000 !important; font-weight: bold; }
         
         .btn { background: #e1e1e1; border: 1px solid #777; padding: 6px 14px; cursor: pointer; font-size: 12px; border-radius: 4px; }
         .btn-admin { background: #ffcc00; font-weight: bold; }
         .btn-danger { background: #ff4444; color: white; }
-        .btn-success { background: #28a745; color: white; }
-        .btn-unrank { background: #6c757d; color: white; }
         
         .hidden { display: none !important; }
         
-        /* BAN VIEW - No image background, just clean CSS */
-        #ban-view { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: radial-gradient(circle, #4a0000 0%, #000000 100%); 
-            color: #fff; z-index: 99999; 
-            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; 
-        }
+        /* Ban Screen */
+        #ban-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #4a0000 0%, #000000 100%); color: #fff; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
         .ban-box { border: 2px solid #ff0000; padding: 40px; background: rgba(0,0,0,0.8); border-radius: 10px; }
 
+        /* Profile & Bio */
         #profile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 100; justify-content: center; align-items: center; }
         .profile-card { background: white; padding: 20px; border: 2px solid #555; width: 350px; text-align: center; border-radius: 8px; }
+        .bio-text { font-style: italic; color: #444; background: #f0f0f0; padding: 10px; border-radius: 5px; margin: 10px 0; font-size: 12px; word-wrap: break-word; }
     </style>
 </head>
 <body>
 
 <div id="ban-view" class="hidden">
     <div class="ban-box">
-        <h1 style="font-family: Impact, sans-serif; font-size: 70px; color: #ff0000; margin: 0;">BANNED</h1>
-        <p style="font-size: 18px; color: #ccc;">Your account has been restricted from this forum.</p>
-        <hr style="border-color: #500;">
+        <h1 style="font-family: Impact; font-size: 70px; color: #ff0000; margin: 0;">BANNED</h1>
         <p id="ban-reason-text" style="font-size: 24px; color: #fff; font-weight: bold; margin: 20px 0;"></p>
-        <p style="font-size: 12px; color: #888;">If you believe this is a mistake, contact an administrator.</p>
     </div>
 </div>
 
 <header>
     <div style="font-weight:bold; font-size: 18px;">THE ROBLOXIANS FORUM</div>
-    <div id="user-display" style="font-size: 11px; color: #ccc;">Guest Mode</div>
+    <div id="user-display" style="font-size: 11px; color: #ccc;">Guest</div>
 </header>
 
 <div class="main-wrapper">
+    <div id="announcement-bar"></div>
+
     <div id="logged-out-view" class="hidden">
         <div class="auth-card">
-            <h2 style="margin:0; color: #0055ff;">The Robloxians</h2>
-            <p style="font-size: 11px; margin-bottom: 15px;">Welcome! Please log in or sign up.</p>
+            <h2>The Robloxians</h2>
             <input type="text" id="reg-username" placeholder="Username">
             <input type="email" id="auth-email" placeholder="Email">
             <input type="password" id="auth-password" placeholder="Password">
             <select id="reg-gender"><option value="Boy">Boy</option><option value="Girl">Girl</option></select>
-            <div style="margin-top:15px; display: flex; justify-content: center; gap: 10px;">
-                <button class="btn btn-success" id="loginBtn">Login</button>
-                <button class="btn btn-admin" id="signupBtn">Sign Up</button>
-            </div>
+            <div style="margin-top:15px;"><button class="btn" id="loginBtn">Login</button> <button class="btn btn-admin" id="signupBtn">Sign Up</button></div>
         </div>
     </div>
 
     <div id="logged-in-view" class="hidden">
-        <div style="background: #e1e1e1; padding: 8px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center;">
+        <div style="background: #e1e1e1; padding: 8px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between;">
             <span id="welcome-text" style="font-size: 11px; font-weight: bold;">Loading...</span>
             <div>
                 <button class="btn btn-admin hidden" id="adminBtn">Admin Panel</button>
@@ -97,22 +82,22 @@
         </div>
 
         <div id="admin-panel" class="hidden" style="border: 2px dashed orange; padding: 15px; margin: 15px; background: #fffdf0;">
-            <strong>Moderation Tools</strong><br>
-            <input type="text" id="target-uid" placeholder="Enter User UID" style="width: 80%; margin-top:5px;"><br>
-            <div style="margin-top: 10px; display: flex; gap: 5px;">
+            <strong>Staff Controls</strong><br>
+            <input type="text" id="target-uid" placeholder="Target UID">
+            <input type="text" id="announce-text" placeholder="Announcement Message" style="width: 80%;">
+            <div style="margin-top: 10px;">
+                <button class="btn btn-admin" id="postAnnounce">Post Announcement</button>
+                <button class="btn btn-danger" id="clearAnnounce">Clear</button> |
                 <button class="btn btn-danger" id="applyBan">Ban</button>
-                <button class="btn btn-success" id="applyUnban">Unban</button>
-                <button class="btn btn-admin" id="applyAdmin">Promote</button>
-                <button class="btn btn-unrank" id="applyUnrank">Unrank</button>
+                <button class="btn btn-admin" id="applyAdmin">Admin</button>
+                <button class="btn" id="applyUnrank">Unrank</button>
             </div>
         </div>
 
         <div style="padding: 15px;">
-            <div class="forum-header">Community Feed</div>
-            <div style="padding: 15px; border: 1px solid #ccc; background: #f9f9f9;">
-                <textarea id="post-input" placeholder="What's on your mind?"></textarea><br>
-                <button class="btn btn-admin" id="submitPost" style="margin-top:8px;">Post Message</button>
-            </div>
+            <div class="forum-header">Community Discussions</div>
+            <textarea id="post-input" placeholder="What's on your mind?"></textarea>
+            <button class="btn btn-admin" id="submitPost" style="margin-top:8px;">Post</button>
             <div id="thread-display"></div>
         </div>
     </div>
@@ -121,9 +106,9 @@
 <div id="profile-overlay">
     <div class="profile-card">
         <h2 id="p-name">Profile</h2>
-        <p id="p-id" style="font-size: 12px; color: #d00; font-weight: bold;"></p> 
-        <p id="p-gender" style="color: #666; font-size: 12px;"></p>
-        <p id="p-uid-hidden" style="font-size: 10px; color: #aaa;"></p>
+        <p id="p-id" style="color: #d00; font-weight: bold;"></p>
+        <div id="p-bio" class="bio-text">No bio set.</div>
+        <button id="edit-bio-btn" class="btn hidden">Edit Bio</button>
         <hr>
         <button class="btn" onclick="document.getElementById('profile-overlay').style.display='none'">Close</button>
     </div>
@@ -147,20 +132,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
-    const OWNER_EMAIL = "fahid.001x@gmail.com"; 
-
-    const OWNER_ICON = "https://cdn-icons-png.flaticon.com/16/616/616412.png"; 
-    const ADMIN_ICON = "https://cdn-icons-png.flaticon.com/16/1067/1067357.png";
-
-    const badWords = ["fuck", "shit", "ass", "bitch", "crap", "nigger", "retard", "faggot", "cum", "kys", "kill yourself", "porn", "gooner", "nigga", "asshole", "shitting", "groom", "rape", "raped","dick", "xnxx", "faggoter", "cock", "fag", "dounche", "dounchebag"];
-    const filterText = (text) => {
-        let clean = text;
-        badWords.forEach(word => {
-            const regex = new RegExp("\\b" + word + "\\b", "gi");
-            clean = clean.replace(regex, "####");
-        });
-        return clean;
-    };
+    const OWNER_EMAIL = "fahid.001x@gmail.com";
 
     onAuthStateChanged(auth, async (user) => {
         if (user) {
@@ -171,53 +143,44 @@
                 document.getElementById('ban-reason-text').innerText = "Reason: " + banSnap.val().reason;
                 return;
             }
-
-            const snap = await get(child(ref(db), `users/${user.uid}`));
-            let userData = snap.val();
-
-            if(user.email.toLowerCase() === OWNER_EMAIL.toLowerCase()) {
-                if(!userData || userData.rank !== "owner") {
-                    await update(ref(db, `users/${user.uid}`), { player_id: 1, rank: "owner" });
-                    userData = (await get(child(ref(db), `users/${user.uid}`))).val();
-                }
-            }
-
-            document.getElementById('welcome-text').innerText = "Logged in as: " + (userData ? userData.username : "User");
             document.getElementById('logged-in-view').classList.remove('hidden');
             document.getElementById('logged-out-view').classList.add('hidden');
-
-            const isStaff = user.email.toLowerCase() === OWNER_EMAIL.toLowerCase() || (userData && (userData.rank === "admin" || userData.rank === "owner"));
-            if(isStaff) document.getElementById('adminBtn').classList.remove('hidden');
             
-            loadThreads(isStaff);
+            const snap = await get(child(ref(db), `users/${user.uid}`));
+            const userData = snap.val();
+            document.getElementById('welcome-text').innerText = "Welcome, " + (userData ? userData.username : "User");
+            
+            if(user.email.toLowerCase() === OWNER_EMAIL || (userData && userData.rank === "admin")) {
+                document.getElementById('adminBtn').classList.remove('hidden');
+            }
+
+            // Sync Announcement
+            onValue(ref(db, 'announcement'), (s) => {
+                const bar = document.getElementById('announcement-bar');
+                if(s.exists() && s.val().text) {
+                    bar.innerText = "📢 ANNOUNCEMENT: " + s.val().text;
+                    bar.style.display = "block";
+                } else { bar.style.display = "none"; }
+            });
+
+            loadThreads();
         } else {
             document.getElementById('logged-out-view').classList.remove('hidden');
             document.getElementById('logged-in-view').classList.add('hidden');
-            document.getElementById('ban-view').classList.add('hidden');
         }
     });
 
-    async function loadThreads(isStaff) {
+    async function loadThreads() {
         onValue(ref(db, 'threads'), async (s) => {
             const d = document.getElementById('thread-display'); d.innerHTML = "";
-            let threads = [];
-            s.forEach(c => { threads.push({id: c.key, ...c.val()}); });
+            let threads = []; s.forEach(c => { threads.push({id: c.key, ...c.val()}); });
             threads.reverse();
-
             for (let p of threads) {
                 const uSnap = await get(child(ref(db), `users/${p.uid}`));
                 const uD = uSnap.val();
-                let nameStyle = (uD && uD.rank === "owner") ? "owner-name" : "";
-                let icon = "";
-                if(uD && uD.rank === "owner") icon = `<img src="${OWNER_ICON}" class="rank-icon">`;
-                else if(uD && uD.rank === "admin") icon = `<img src="${ADMIN_ICON}" class="rank-icon">`;
-
                 const row = document.createElement('div');
                 row.className = 'thread-row';
-                row.innerHTML = `
-                    <div>${icon}<span class="clickable-name ${nameStyle}" onclick="openProfile('${p.uid}')">${p.author}</span>: <span>${p.message}</span></div>
-                    ${(p.uid === auth.currentUser.uid || isStaff) ? `<button class="btn" onclick="deletePost('${p.id}')" style="color:red; border:none; background:none; cursor:pointer;">[x]</button>` : ""}
-                `;
+                row.innerHTML = `<div><span class="clickable-name ${uD && uD.rank === "owner" ? 'owner-name' : ''}" onclick="openProfile('${p.uid}')">${p.author}</span>: ${p.message}</div>`;
                 d.appendChild(row);
             }
         });
@@ -228,60 +191,50 @@
         if(snap.exists()) {
             const d = snap.val();
             document.getElementById('p-name').innerText = d.username;
-            document.getElementById('p-id').innerText = "Account ID: #" + (d.player_id || "LEGACY");
-            document.getElementById('p-gender').innerText = "Gender: " + d.gender;
-            document.getElementById('p-uid-hidden').innerText = "UID: " + uid;
+            document.getElementById('p-id').innerText = "ID: #" + (d.player_id || "???");
+            document.getElementById('p-bio').innerText = d.bio || "This user hasn't written a bio yet.";
             document.getElementById('profile-overlay').style.display = 'flex';
-            if(!document.getElementById('adminBtn').classList.contains('hidden')) document.getElementById('target-uid').value = uid;
+            
+            const editBtn = document.getElementById('edit-bio-btn');
+            if(uid === auth.currentUser.uid) {
+                editBtn.classList.remove('hidden');
+                editBtn.onclick = () => {
+                    const newBio = prompt("Enter your new bio:", d.bio || "");
+                    if(newBio !== null) {
+                        update(ref(db, `users/${uid}`), { bio: newBio });
+                        document.getElementById('p-bio').innerText = newBio;
+                    }
+                };
+            } else { editBtn.classList.add('hidden'); }
         }
     };
 
-    document.getElementById('applyBan').onclick = () => {
-        const uid = document.getElementById('target-uid').value;
-        const reason = prompt("Ban Reason:");
-        if(uid && reason) set(ref(db, `bans/${uid}`), { reason: reason }).then(() => alert("Banned successfully."));
+    // Admin Actions
+    document.getElementById('postAnnounce').onclick = () => {
+        const txt = document.getElementById('announce-text').value;
+        if(txt) set(ref(db, 'announcement'), { text: txt });
     };
-
-    document.getElementById('applyUnban').onclick = () => {
-        const uid = document.getElementById('target-uid').value;
-        if(uid) remove(ref(db, `bans/${uid}`)).then(() => alert("Unbanned successfully."));
-    };
-
-    document.getElementById('applyAdmin').onclick = () => {
-        const uid = document.getElementById('target-uid').value;
-        if(uid) update(ref(db, `users/${uid}`), { rank: "admin" }).then(() => alert("Promoted to Admin."));
-    };
-
-    document.getElementById('applyUnrank').onclick = async () => {
-        const uid = document.getElementById('target-uid').value;
-        if(uid) {
-            const snap = await get(child(ref(db), `users/${uid}`));
-            if(snap.exists() && snap.val().email === OWNER_EMAIL) return alert("Nice try, you can't unrank the Owner!");
-            update(ref(db, `users/${uid}`), { rank: "member" }).then(() => alert("User unranked."));
-        }
-    };
-
+    document.getElementById('clearAnnounce').onclick = () => remove(ref(db, 'announcement'));
+    document.getElementById('logoutBtn').onclick = () => signOut(auth).then(() => location.reload());
+    document.getElementById('adminBtn').onclick = () => document.getElementById('admin-panel').classList.toggle('hidden');
     document.getElementById('submitPost').onclick = () => {
-        const msg = document.getElementById('post-input').value.trim();
-        if(msg) push(ref(db, 'threads'), { message: filterText(msg), author: document.getElementById('welcome-text').innerText.replace("Logged in as: ", ""), uid: auth.currentUser.uid });
+        const m = document.getElementById('post-input').value;
+        if(m) push(ref(db, 'threads'), { message: m, author: document.getElementById('welcome-text').innerText.replace("Welcome, ", ""), uid: auth.currentUser.uid });
         document.getElementById('post-input').value = "";
     };
-
+    
+    // Login/Signup logic... (Same as before)
+    document.getElementById('loginBtn').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-password').value);
     document.getElementById('signupBtn').onclick = async () => {
-        const u = document.getElementById('reg-username').value.trim();
-        const e = document.getElementById('auth-email').value.trim();
+        const u = document.getElementById('reg-username').value;
+        const e = document.getElementById('auth-email').value;
         const p = document.getElementById('auth-password').value;
         const g = document.getElementById('reg-gender').value;
         const resTransaction = await runTransaction(ref(db, 'global_id_counter'), (c) => (c || 0) + 1);
         const res = await createUserWithEmailAndPassword(auth, e, p);
-        await set(ref(db, 'users/' + res.user.uid), { username: u, gender: g, email: e, rank: "member", player_id: resTransaction.snapshot.val() });
+        await set(ref(db, 'users/' + res.user.uid), { username: u, gender: g, email: e, rank: "member", player_id: resTransaction.snapshot.val(), bio: "" });
         location.reload();
     };
-
-    document.getElementById('loginBtn').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-password').value);
-    document.getElementById('logoutBtn').onclick = () => signOut(auth).then(() => location.reload());
-    document.getElementById('adminBtn').onclick = () => document.getElementById('admin-panel').classList.toggle('hidden');
-    window.deletePost = (id) => { if(confirm("Delete post?")) remove(ref(db, `threads/${id}`)); };
 </script>
 </body>
 </html>
