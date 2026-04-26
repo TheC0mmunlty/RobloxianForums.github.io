@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>The Robloxians - 2012 Legacy</title>
+    <title>The Robloxians</title>
     <style>
-        /* GUI SCALE: SMALLER & CLASSIC FONT */
+        /* SCALED UP GUI & RESTORED CLASSIC FONTS */
         body { 
             font-family: "MS Sans Serif", Geneva, sans-serif; 
             margin: 0; 
@@ -16,76 +16,83 @@
         header { 
             background: #0055ff; 
             color: white; 
-            padding: 4px 15px; 
+            padding: 8px 20px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            border-bottom: 3px solid #0033aa;
+            border-bottom: 4px solid #0033aa;
         }
 
-        /* BANNER: NO EMOJI, FIXED POSITION */
+        /* FIXED PERSISTENT BANNER */
         #announcement-container { 
             background: #ff9800; 
             border-bottom: 2px solid #cc7a00; 
             color: #fff; 
-            padding: 6px; 
+            padding: 12px; 
             font-weight: bold; 
             text-align: center;
-            display: none;
-            font-size: 12px;
+            display: none; 
+            font-size: 14px;
         }
 
         .main-wrapper { 
-            width: 800px; /* Smaller GUI */
-            margin: 10px auto; 
+            width: 950px; /* BIGGER GUI */
+            margin: 20px auto; 
             background: rgba(238, 238, 238, 0.95); 
             border: 1px solid #888; 
-            min-height: 600px;
-            padding: 15px;
+            min-height: 700px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.4);
         }
 
         .forum-header { 
             background: #ddd; 
             color: #333; 
-            padding: 5px; 
+            padding: 8px; 
             font-weight: bold;
             border: 1px solid #bbb;
-            font-size: 12px;
+            font-size: 14px;
         }
 
+        /* WIDE CHAT INPUT */
         textarea#post-input { 
-            width: 98%; 
-            height: 80px; 
+            width: 100%; 
+            box-sizing: border-box;
+            height: 100px; 
             border: 1px solid #ccc; 
-            padding: 5px;
-            font-size: 12px;
-            margin-bottom: 5px;
+            padding: 10px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-family: Arial, sans-serif;
         }
 
         .btn { 
             background: #e1e1e1; 
             border: 1px solid #777; 
-            padding: 3px 10px; 
+            padding: 5px 15px; 
             cursor: pointer; 
-            font-size: 11px;
+            font-size: 12px;
             font-family: "MS Sans Serif", sans-serif;
+            font-weight: bold;
         }
         
-        .btn-submit { background: #ffcc00; border-color: #ccaa00; font-weight: bold; }
+        .btn-submit { background: #ffcc00; border-color: #ccaa00; }
+        .btn-admin { background: #ffcc00; border: 1px solid #777; } /* Admin Dashboard Yellow */
+        .btn-danger { background: #ff4444; color: white; border: none; }
 
         .thread-row { 
             border-bottom: 1px solid #ddd; 
-            padding: 8px; 
+            padding: 12px; 
             background: #fff; 
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 12px;
+            font-size: 14px;
         }
 
         .clickable-name { font-weight: bold; cursor: pointer; color: #0055ff; }
 
-        #admin-panel { border: 2px solid #0055ff; padding: 10px; margin-bottom: 10px; background: #fff; font-size: 11px; }
+        #admin-panel { border: 2px solid #0055ff; padding: 15px; margin-bottom: 15px; background: #fff; }
         .hidden { display: none !important; }
 
         #profile-overlay { 
@@ -93,14 +100,14 @@
             background: rgba(0,0,0,0.8); display: none; 
             z-index: 1000; justify-content: center; align-items: center; 
         }
-        .profile-card { background: #fff; border: 4px solid #0055ff; padding: 20px; width: 350px; text-align: center; }
+        .profile-card { background: #fff; border: 5px solid #0055ff; padding: 30px; width: 400px; text-align: center; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="font-weight:bold;">ROBLOX - The Robloxians</div>
-    <div id="user-display" style="font-size: 11px;">Guest</div>
+    <div style="font-weight:bold; font-size: 18px;">ROBLOX - The Robloxians</div>
+    <div id="user-display" style="font-size: 12px;">Guest</div>
 </header>
 
 <div id="announcement-container">
@@ -109,47 +116,48 @@
 
 <div class="main-wrapper">
     <div id="logged-in-view" class="hidden">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-            <span id="welcome-text" style="font-weight: bold; font-size: 12px;"></span>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <span id="welcome-text" style="font-weight: bold; font-size: 16px;"></span>
             <div>
-                <button class="btn hidden" id="adminBtn">System Settings</button>
-                <button class="btn" id="logoutBtn" style="background:#ff4444; color:white;">Exit</button>
+                <button class="btn btn-admin hidden" id="adminBtn">Admin Dashboard</button>
+                <button class="btn btn-danger" id="logoutBtn">Logout</button>
             </div>
         </div>
 
         <div id="admin-panel" class="hidden">
-            <strong>Command Center</strong><br>
-            <input type="text" id="announce-text" placeholder="Banner text..." style="width:50%;">
-            <button class="btn btn-submit" id="postAnnounce">Update Banner</button>
+            <strong>Admin Dashboard</strong><br>
+            <input type="text" id="announce-text" placeholder="New Global Banner Text..." style="width:70%; padding:5px;">
+            <button class="btn btn-submit" id="postAnnounce">Save Banner</button>
             <hr>
-            ID: <input type="text" id="target-uid" style="width:120px;">
-            <button class="btn" id="applyAdmin">Promote</button>
+            Target UID: <input type="text" id="target-uid" style="width:150px; padding:5px;">
+            <button class="btn" id="applyAdmin">Make Admin</button>
             <button class="btn" id="removeAdmin">Unrank</button>
             <br><br>
-            Ban: <input type="number" id="ban-days" placeholder="Days (0 for Perm)" style="width:80px;">
-            <button class="btn" id="applyBan" style="color:red;">Ban User</button>
-            <button class="btn" id="applyUnban">Unban</button>
+            Ban Duration: <input type="number" id="ban-days" placeholder="Days (0 = Perm)" style="width:100px; padding:5px;">
+            <button class="btn" id="applyBan" style="color:red;">Apply Ban</button>
+            <button class="btn" id="applyUnban">Unban User</button>
             <hr>
-            <div id="admin-logs" style="height: 60px; overflow-y: auto; background: #000; color: #0f0; padding: 5px; font-family: monospace; font-size: 10px;"></div>
+            <strong>Shadow Logs:</strong>
+            <div id="admin-logs" style="height: 80px; overflow-y: auto; background: #000; color: #0f0; padding: 8px; font-family: monospace; font-size: 11px; margin-top: 5px;"></div>
         </div>
 
         <div class="forum-header">Community Feed</div>
-        <textarea id="post-input" placeholder="Post a message..."></textarea><br>
+        <textarea id="post-input" placeholder="Post a message to the board..."></textarea><br>
         <button class="btn btn-submit" id="submitPost">Submit Post</button>
         
-        <div id="thread-display" style="margin-top: 10px;"></div>
+        <div id="thread-display" style="margin-top: 15px;"></div>
     </div>
 </div>
 
 <div id="profile-overlay">
     <div class="profile-card">
-        <h2 id="p-name" style="margin:0;"></h2>
-        <div id="p-bio" style="background:#f0f0f0; padding:10px; min-height:60px; text-align:left; font-size:12px; margin-top:5px;"></div>
-        <div id="p-uid-display" style="font-size: 10px; color: #666; margin-top: 5px;"></div>
+        <h2 id="p-name"></h2>
+        <div id="p-bio" style="background:#f9f9f9; padding:15px; border:1px solid #ccc; text-align:left; font-size:14px;"></div>
+        <div id="p-uid-display" style="font-size: 11px; color: #888; margin: 10px 0;"></div>
         <div id="decoration-options" class="hidden">
             <hr>
-            Rank Color: <input type="color" id="theme-picker">
-            <button class="btn" id="save-theme-btn">Save</button>
+            Name Color: <input type="color" id="theme-picker">
+            <button class="btn" id="save-theme-btn">Update Profile</button>
         </div>
         <br>
         <button class="btn" onclick="document.getElementById('profile-overlay').style.display='none'">Close</button>
@@ -182,18 +190,17 @@
             const snap = await get(child(ref(db), `users/${user.uid}`));
             const uD = snap.val();
 
-            // CHECK BAN STATUS
             if(uD && uD.banned) {
                 const now = Date.now();
                 if(uD.banUntil === 0 || now < uD.banUntil) {
-                    alert("Account Suspended. Type: " + (uD.banUntil === 0 ? "Permanent" : "Temporary"));
+                    alert("ACCOUNT SUSPENDED.");
                     signOut(auth).then(() => location.reload());
                     return;
                 }
             }
 
             document.getElementById('logged-in-view').classList.remove('hidden');
-            document.getElementById('welcome-text').innerText = "Hello, " + (uD ? uD.username : "User");
+            document.getElementById('welcome-text').innerText = "Logged in as: " + (uD ? uD.username : "User");
             
             if(user.email.toLowerCase() === OWNER_EMAIL || (uD && uD.rank === "admin")) {
                 isStaff = true;
@@ -211,9 +218,6 @@
                 }
             });
             loadThreads();
-        } else {
-            // Re-use your previous login HTML/JS here
-            document.getElementById('logged-in-view').innerHTML = "Please refresh to login.";
         }
     });
 
@@ -234,7 +238,7 @@
                 row.className = 'thread-row';
                 row.innerHTML = `
                     <div><span class="clickable-name" style="color:${color}" data-uid="${post.uid}">${post.author}</span>: ${post.message}</div>
-                    ${isStaff ? `<button class="btn" style="background:#ff4444; color:white; border:none;" onclick="deletePost('${post.id}', '${post.author}', \`${post.message}\`)">DEL</button>` : ""}
+                    ${isStaff ? `<button class="btn btn-danger" style="padding:2px 6px; font-size:10px;" onclick="deletePost('${post.id}', '${post.author}', \`${post.message}\`)">DEL</button>` : ""}
                 `;
                 displayArea.appendChild(row);
             });
@@ -245,10 +249,8 @@
         });
     }
 
-    // MODERATION: FIXED LOGGING & UNRANK/UNBAN
     window.deletePost = (pid, author, msg) => {
         if(confirm("Confirm deletion?")) {
-            // FIXED: Now logs exactly what was deleted
             push(ref(db, 'admin_logs'), { 
                 time: new Date().toLocaleTimeString(), 
                 msg: `ERASED (${author}): "${msg}"` 
@@ -257,27 +259,35 @@
         }
     };
 
+    window.openProfile = async (uid) => {
+        const snap = await get(child(ref(db), `users/${uid}`));
+        if(snap.exists()) {
+            const d = snap.val();
+            document.getElementById('p-name').innerText = d.username;
+            document.getElementById('p-bio').innerText = d.bio || "No status set.";
+            document.getElementById('p-uid-display').innerText = "UID: " + uid;
+            document.getElementById('profile-overlay').style.display = 'flex';
+            if(isStaff) document.getElementById('target-uid').value = uid;
+            if(uid === auth.currentUser.uid) {
+                document.getElementById('decoration-options').classList.remove('hidden');
+                document.getElementById('save-theme-btn').onclick = () => {
+                    update(ref(db, `users/${uid}`), { themeColor: document.getElementById('theme-picker').value });
+                    alert("Profile updated.");
+                };
+            }
+        }
+    };
+
+    document.getElementById('postAnnounce').onclick = () => set(ref(db, 'announcement'), { text: document.getElementById('announce-text').value });
     document.getElementById('applyBan').onclick = () => {
         const uid = document.getElementById('target-uid').value;
         const days = parseInt(document.getElementById('ban-days').value) || 0;
         const expiry = days === 0 ? 0 : Date.now() + (days * 24 * 60 * 60 * 1000);
         update(ref(db, `users/${uid}`), { banned: true, banUntil: expiry });
-        alert("Action processed.");
     };
-
-    document.getElementById('applyUnban').onclick = () => {
-        const uid = document.getElementById('target-uid').value;
-        update(ref(db, `users/${uid}`), { banned: false, banUntil: 0 });
-        alert("Restriction lifted.");
-    };
-
-    document.getElementById('removeAdmin').onclick = () => {
-        const uid = document.getElementById('target-uid').value;
-        update(ref(db, `users/${uid}`), { rank: "member" });
-        alert("Rank removed.");
-    };
-
-    // Rest of your Logic (SubmitPost, openProfile, etc) remains the same.
+    document.getElementById('applyUnban').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value}`), { banned: false, banUntil: 0 });
+    document.getElementById('removeAdmin').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value}`), { rank: "member" });
+    
     document.getElementById('submitPost').onclick = async () => {
         const m = document.getElementById('post-input').value;
         if(!m) return;
@@ -285,6 +295,7 @@
         push(ref(db, 'threads'), { message: m, author: uSnap.val().username, uid: auth.currentUser.uid });
         document.getElementById('post-input').value = "";
     };
+
     document.getElementById('adminBtn').onclick = () => document.getElementById('admin-panel').classList.toggle('hidden');
     document.getElementById('logoutBtn').onclick = () => signOut(auth).then(() => location.reload());
 </script>
