@@ -34,14 +34,14 @@
     <div id="user-display" style="font-size: 11px; color: #ccc;">Guest</div>
 </header>
 
-<div id="profile-overlay" onclick="closeProfile(event)">
-    <div class="profile-card" onclick="event.stopPropagation()">
+<div id="profile-overlay">
+    <div class="profile-card">
         <h2 id="p-name" style="margin:0;">User Profile</h2>
         <p id="p-gender" style="font-size: 12px; color: #666;"></p>
         <hr>
         <div style="text-align: left; max-height: 150px; overflow-y: auto;">
             <strong>Friends List:</strong>
-            <div id="p-friends">No friends added.</div>
+            <div id="p-friends">No friends yet.</div>
         </div>
         <hr>
         <button class="btn" id="addFriendBtn">Add Friend</button>
@@ -67,7 +67,7 @@
 
     <div id="logged-in-view" class="hidden">
         <div style="background: #eee; padding: 10px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between;">
-            <span id="welcome-text" style="font-weight: bold;">Syncing...</span>
+            <span id="welcome-text" style="font-weight: bold;">Loading...</span>
             <div>
                 <button class="btn hidden" id="adminBtn" style="background:#ffcc00">Admin</button>
                 <button class="btn" id="logoutBtn">Logout</button>
@@ -82,7 +82,7 @@
 
             <div class="forum-header">General Discussion - Post Message</div>
             <div style="padding: 10px; border: 1px solid #ccc; border-top: none;">
-                <textarea id="post-input" placeholder="Say something"></textarea>
+                <textarea id="post-input" placeholder="No swearing! Filter is active."></textarea>
                 <button class="btn" id="submitPost" style="margin-top:5px; font-weight: bold;">Post Message</button>
             </div>
 
@@ -115,18 +115,20 @@
     let currentUsername = "";
     let viewingUid = "";
 
-    // --- SWEAR FILTER ---
-    const badWords = ["fuck", "shit", "ass", "bitch", "crap", "nigger", "retard", "faggot", "cum", "kys", "kill yourself", "porn", "gooner", "nigga", "asshole", "shitting", "groom", "rape", "raped","dick", "xnxx", "faggoter", "cock", "fag", "dounche" "dounchebag",]; // Add more here
+    // --- UPDATED SWEAR FILTER (FIXED SYNTAX) ---
+    const badWords = ["fuck", "shit", "ass", "bitch", "crap", "nigger", "retard", "faggot", "cum", "kys", "kill yourself", "porn", "gooner", "nigga", "asshole", "shitting", "groom", "rape", "raped","dick", "xnxx", "faggoter", "cock", "fag", "dounche", "dounchebag"]; 
+
     const censor = (text) => {
         let cleaned = text;
         badWords.forEach(word => {
-            const regex = new RegExp(word, "gi");
+            // This regex handles phrases and single words
+            const regex = new RegExp("\\b" + word + "\\b", "gi");
             cleaned = cleaned.replace(regex, "#".repeat(word.length));
         });
         return cleaned;
     };
 
-    // --- AUTH ---
+    // --- AUTH ACTIONS ---
     document.getElementById('signupBtn').onclick = async () => {
         const u = document.getElementById('reg-username').value;
         const e = document.getElementById('auth-email').value;
@@ -141,21 +143,23 @@
     };
 
     document.getElementById('loginBtn').onclick = () => {
-        signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-password').value).catch(err => alert(err.message));
+        const e = document.getElementById('auth-email').value;
+        const p = document.getElementById('auth-password').value;
+        signInWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
     };
+
     document.getElementById('logoutBtn').onclick = () => signOut(auth);
 
     // --- POSTING ---
     document.getElementById('submitPost').onclick = async () => {
-        let msg = document.getElementById('post-input').value;
-        if(!msg) return;
+        let rawMsg = document.getElementById('post-input').value;
+        if(!rawMsg) return;
         
-        // Apply Censor
-        msg = censor(msg);
+        const cleanMsg = censor(rawMsg);
 
         try {
             await push(ref(db, 'threads'), {
-                message: msg,
+                message: cleanMsg,
                 author: currentUsername,
                 uid: auth.currentUser.uid,
                 time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
@@ -164,7 +168,7 @@
         } catch(err) { alert(err.message); }
     };
 
-    // --- PROFILE & SOCIAL ---
+    // --- PROFILE LOGIC ---
     window.openProfile = async (uid) => {
         viewingUid = uid;
         const snap = await get(child(ref(db), `users/${uid}`));
@@ -174,36 +178,35 @@
             document.getElementById('p-gender').innerText = data.gender;
             document.getElementById('profile-overlay').style.display = 'flex';
             
-            // Sync Friends
+            // Show friends
             onValue(ref(db, `friends/${uid}`), (s) => {
                 const list = document.getElementById('p-friends');
-                list.innerHTML = "";
-                if(s.exists()) {
-                    s.forEach(child => {
-                        list.innerHTML += `<div class="friend-item">⭐ ${child.val().name}</div>`;
-                    });
-                } else { list.innerHTML = "No friends yet."; }
+                list.innerHTML = s.exists() ? "" : "No friends yet.";
+                s.forEach(child => {
+                    list.innerHTML += `<div class="friend-item">⭐ ${child.val().name}</div>`;
+                });
             });
         }
     };
 
     document.getElementById('addFriendBtn').onclick = async () => {
-        if(viewingUid === auth.currentUser.uid) return alert("Can't friend yourself!");
-        await set(ref(db, `friends/${auth.currentUser.uid}/${viewingUid}`), { name: document.getElementById('p-name').innerText });
-        alert("Friend added to your list!");
+        if(viewingUid === auth.currentUser.uid) return alert("You're already your own best friend!");
+        const targetName = document.getElementById('p-name').innerText;
+        await set(ref(db, `friends/${auth.currentUser.uid}/${viewingUid}`), { name: targetName });
+        alert("Added " + targetName + " to your friend list!");
     };
 
     document.getElementById('reportBtn').onclick = () => {
-        const reason = prompt("Reason for reporting this user?");
+        const reason = prompt("Report reason:");
         if(reason) {
-            push(ref(db, 'reports'), { reported: viewingUid, by: auth.currentUser.uid, reason: reason });
-            alert("User reported to Admin.");
+            push(ref(db, 'reports'), { reported: viewingUid, reason: reason, by: auth.currentUser.uid });
+            alert("Report sent.");
         }
     };
 
-    window.deletePost = (id) => { if(confirm("Delete?")) remove(ref(db, 'threads/'+id)); };
+    window.deletePost = (id) => { if(confirm("Delete this?")) remove(ref(db, 'threads/'+id)); };
 
-    // --- MAIN LOGIC ---
+    // --- AUTH OBSERVER ---
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             document.getElementById('logged-out-view').classList.add('hidden');
@@ -211,7 +214,7 @@
             
             const snap = await get(child(ref(db), `users/${user.uid}`));
             currentUsername = snap.exists() ? snap.val().username : user.email;
-            document.getElementById('welcome-text').innerText = `Welcome, ${currentUsername}!`;
+            document.getElementById('welcome-text').innerText = "Welcome back, " + currentUsername;
 
             const isAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
             if(isAdmin) document.getElementById('adminBtn').classList.remove('hidden');
@@ -222,18 +225,18 @@
                 s.forEach((childSnap) => {
                     const post = childSnap.val();
                     const id = childSnap.key;
-                    const del = (post.uid === user.uid || isAdmin) ? `<button class="btn" onclick="deletePost('${id}')" style="color:red">Delete</button>` : "";
+                    const canDelete = (post.uid === user.uid || isAdmin);
+                    const delBtn = canDelete ? `<button class="btn" onclick="deletePost('${id}')" style="color:red; border:none; background:none; cursor:pointer;">[x]</button>` : "";
                     
-                    const html = `
+                    display.insertAdjacentHTML('afterbegin', `
                         <div class="thread-row">
                             <div>
                                 <span class="clickable-name" onclick="openProfile('${post.uid}')">${post.author}</span>: 
                                 <span>${post.message}</span>
                                 <div style="font-size:10px; color:#999">${post.time}</div>
                             </div>
-                            ${del}
-                        </div>`;
-                    display.insertAdjacentHTML('afterbegin', html);
+                            ${delBtn}
+                        </div>`);
                 });
             });
         } else {
