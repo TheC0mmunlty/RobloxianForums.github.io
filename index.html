@@ -75,7 +75,13 @@
             <button class="btn btn-submit" id="postAnnounce">Save</button>
             <hr>
             Target UID: <input type="text" id="target-uid" placeholder="Paste UID here...">
-            <button class="btn" id="applyBan" style="color:red;">Ban User</button>
+            <select id="ban-duration" class="btn">
+                <option value="perm">Permanent</option>
+                <option value="1">1 Day</option>
+                <option value="3">3 Days</option>
+                <option value="7">7 Days</option>
+            </select>
+            <button class="btn" id="applyBan" style="color:red;">Apply Ban</button>
             <button class="btn" id="applyUnban">Unban User</button>
         </div>
 
@@ -126,7 +132,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, set, push, onValue, get, child, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, push, onValue, get, child, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyANfmR8j_Z7mHmSO1GNXGnIGKTdBiU6uiU",
@@ -149,32 +155,30 @@
     function createAvatarHTML(colors, isCEO) {
         let torsoColor = colors.t;
         if (colors.h === colors.t) torsoColor = "#0d5f97"; 
-        return `
-            <div class="avatar-frame ${isCEO ? 'ceo-glow' : ''}">
-                <div class="char-head" style="background:${colors.h}"></div>
-                <div class="char-torso" style="background:${torsoColor}">
-                    <div class="char-arm arm-l" style="background:${colors.h}"></div>
-                    <div class="char-arm arm-r" style="background:${colors.h}"></div>
-                </div>
-                <div style="display:flex;">
-                    <div class="char-leg" style="background:${colors.l}"></div>
-                    <div class="char-leg" style="background:${colors.l}"></div>
-                </div>
-            </div>`;
+        return `<div class="avatar-frame ${isCEO ? 'ceo-glow' : ''}"><div class="char-head" style="background:${colors.h}"></div><div class="char-torso" style="background:${torsoColor}"><div class="char-arm arm-l" style="background:${colors.h}"></div><div class="char-arm arm-r" style="background:${colors.h}"></div></div><div style="display:flex;"><div class="char-leg" style="background:${colors.l}"></div><div class="char-leg" style="background:${colors.l}"></div></div></div>`;
     }
 
     window.showView = (id) => {
         ['forum-home', 'profile-view', 'auth-view'].forEach(v => {
-            const el = document.getElementById(v);
-            if(el) el.classList.add('hidden');
+            const el = document.getElementById(v); if(el) el.classList.add('hidden');
         });
         document.getElementById(id).classList.remove('hidden');
     };
 
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            onValue(ref(db, `users/${user.uid}/banned`), (snap) => {
-                if(snap.val() === true) { signOut(auth).then(()=>location.reload()); }
+            onValue(ref(db, `users/${user.uid}`), (snap) => {
+                const data = snap.val();
+                if(data && data.banned === true) {
+                    const now = Date.now();
+                    if(data.banExpires === "perm" || now < data.banExpires) {
+                        const msg = data.banExpires === "perm" ? "PERMANENT" : "until " + new Date(data.banExpires).toLocaleString();
+                        alert("You are banned " + msg);
+                        signOut(auth).then(()=>location.reload());
+                    } else {
+                        update(ref(db, `users/${user.uid}`), { banned: false, banExpires: 0 });
+                    }
+                }
             });
 
             document.getElementById('auth-view').classList.add('hidden');
@@ -195,12 +199,11 @@
                     const p = c.val();
                     const authorData = allUsers[p.uid] || {};
                     const isBanned = authorData.banned === true;
-                    const displayName = isBanned ? "[ Content Deleted ]" : (authorData.username || "Guest");
                     const div = document.createElement('div');
                     div.className = 'thread-row';
                     const av = createAvatarHTML(authorData.colors || {h:'#f5cd30', t:'#0d5f97', l:'#a06110'}, p.uid === CEO_UID);
                     div.innerHTML = `${av} <div style="margin-left:20px;">
-                        <strong style="color:#0055ff; cursor:pointer;" onclick="loadProfile('${p.uid}')">${displayName}</strong> 
+                        <strong style="color:#0055ff; cursor:pointer;" onclick="loadProfile('${p.uid}')">${isBanned ? '[ Content Deleted ]' : authorData.username}</strong> 
                         <span class="user-id-tag">#${authorData.id || '?'}</span><br>
                         ${isBanned ? '<i style="color:gray;">[Removed]</i>' : p.message}
                     </div>`;
@@ -219,38 +222,32 @@
     });
 
     document.getElementById('signupBtn').onclick = async () => {
-        const desiredUser = document.getElementById('reg-user').value.trim();
-        const email = document.getElementById('auth-email').value;
+        const user = document.getElementById('reg-user').value.trim();
+        const email = document.getElementById('auth-email').value.trim().toLowerCase();
         const pass = document.getElementById('auth-pass').value;
 
-        if(!desiredUser || !email || !pass) return alert("Fill in everything!");
+        if(!user || !email || !pass) return alert("Fill in everything!");
+        if(PROTECTED_NAMES.includes(user.toLowerCase())) return alert("Username reserved!");
 
-        // 1. Check Protected Names
-        if(PROTECTED_NAMES.includes(desiredUser.toLowerCase())) {
-            return alert("This username is reserved!");
-        }
-
-        // 2. Check if Username is Already Taken
         const allUsersSnap = await get(child(ref(db), 'users'));
         const allUsers = allUsersSnap.val() || {};
-        const nameExists = Object.values(allUsers).some(u => u.username && u.username.toLowerCase() === desiredUser.toLowerCase());
-
-        if(nameExists) {
-            return alert("This username is taken! Try something else.");
-        }
         
-        // 3. Create Account if Unique
+        // Anti-Duplicate Checks
+        const nameTaken = Object.values(allUsers).some(u => u.username?.toLowerCase() === user.toLowerCase());
+        const emailTaken = Object.values(allUsers).some(u => u.email?.toLowerCase() === email);
+
+        if(nameTaken) return alert("Username taken! Try sparkle123 style.");
+        if(emailTaken) return alert("This email is already linked to an account!");
+
         const countSnap = await get(child(ref(db), 'user_count'));
         let newId = (countSnap.val() || 0) + 1;
 
         createUserWithEmailAndPassword(auth, email, pass).then((res) => {
             set(ref(db, `users/${res.user.uid}`), { 
-                username: desiredUser, 
-                id: newId,
-                banned: false, 
-                colors: {h:'#f5cd30', t:'#0d5f97', l:'#a06110'} 
+                username: user, email: email, id: newId, banned: false, banExpires: 0, colors: {h:'#f5cd30', t:'#0d5f97', l:'#a06110'} 
             });
             set(ref(db, 'user_count'), newId);
+            alert("Welcome to the Legacy!");
         }).catch(err => alert(err.message));
     };
 
@@ -266,12 +263,17 @@
         if(auth.currentUser?.uid === uid) document.getElementById('customizer').classList.remove('hidden');
     };
 
-    window.updateColor = (part, color) => {
-        get(child(ref(db), `users/${auth.currentUser.uid}/colors`)).then(s => {
-            let current = s.val() || {h:'#f5cd30', t:'#0d5f97', l:'#a06110'};
-            current[part] = color;
-            update(ref(db, `users/${auth.currentUser.uid}`), { colors: current }).then(() => loadProfile(auth.currentUser.uid));
-        });
+    document.getElementById('applyBan').onclick = () => {
+        const uid = document.getElementById('target-uid').value.trim();
+        const days = document.getElementById('ban-duration').value;
+        let expiry = "perm";
+        if(days !== "perm") expiry = Date.now() + (parseInt(days) * 86400000);
+        
+        update(ref(db, `users/${uid}`), { banned: true, banExpires: expiry }).then(()=>alert("Banned!"));
+    };
+
+    document.getElementById('applyUnban').onclick = () => {
+        update(ref(db, `users/${document.getElementById('target-uid').value.trim()}`), { banned: false, banExpires: 0 }).then(()=>alert("Unbanned."));
     };
 
     document.getElementById('loginBtn').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-pass').value);
@@ -280,8 +282,6 @@
     document.getElementById('logoutBtn').onclick = () => signOut(auth).then(() => location.reload());
     document.getElementById('adminBtn').onclick = () => document.getElementById('admin-panel').classList.toggle('hidden');
     document.getElementById('postAnnounce').onclick = () => set(ref(db, 'announcement/text'), document.getElementById('announce-text').value);
-    document.getElementById('applyBan').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value.trim()}`), { banned: true }).then(()=>alert("Banned."));
-    document.getElementById('applyUnban').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value.trim()}`), { banned: false }).then(()=>alert("Unbanned."));
 </script>
 </body>
-</html>
+</html>>
