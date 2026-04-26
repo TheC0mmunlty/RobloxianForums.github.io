@@ -21,7 +21,6 @@
         .hidden { display: none !important; }
         #admin-panel { border: 2px solid #0055ff; padding: 15px; margin-bottom: 15px; background: #fff; }
         
-        /* PROFILE & AVATAR STYLES */
         .profile-card { background: white; border: 1px solid #ccc; padding: 20px; display: flex; gap: 20px; margin-bottom: 20px; }
         .avatar-box { width: 150px; height: 150px; border: 1px solid #000; background: #eee; position: relative; overflow: hidden; }
         .avatar-box img { width: 100%; height: 100%; object-fit: cover; }
@@ -135,9 +134,8 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
     const OWNER_EMAIL = "fahid.001x@gmail.com";
-    const CEO_UID = "oJm6Z87yVpMe5YgO7G4H0vU7T9m2"; // Replace with your actual UID once logged in!
+    const CEO_UID = "oJm6Z87yVpMe5YgO7G4H0vU7T9m2"; 
 
-    // --- NAVIGATION ---
     window.showView = (viewId) => {
         ['forum-home', 'profile-view'].forEach(v => document.getElementById(v).classList.add('hidden'));
         document.getElementById(viewId).classList.remove('hidden');
@@ -152,7 +150,6 @@
         event.target.classList.add('active-tab');
     };
 
-    // --- AUTH ---
     document.getElementById('signupBtn').onclick = () => {
         const email = document.getElementById('auth-email').value;
         const pass = document.getElementById('auth-pass').value;
@@ -169,15 +166,23 @@
 
     onAuthStateChanged(auth, async (user) => {
         if (user) {
+            // BAN WATCHER
+            onValue(ref(db, `users/${user.uid}/banned`), (snapshot) => {
+                if (snapshot.val() === true) { 
+                    alert("Your account is banned."); 
+                    signOut(auth).then(() => location.reload()); 
+                }
+            });
+
             document.getElementById('auth-view').classList.add('hidden');
             document.getElementById('logged-in-view').classList.remove('hidden');
             const snap = await get(child(ref(db), `users/${user.uid}`));
             const userData = snap.val() || {};
             document.getElementById('welcome-text').innerText = "Hello, " + userData.username + "!";
+            document.getElementById('user-display').innerText = userData.username;
             
             if(user.email.toLowerCase() === OWNER_EMAIL) document.getElementById('adminBtn').classList.remove('hidden');
 
-            // Load Global Forum
             onValue(ref(db, 'threads'), (s) => {
                 const display = document.getElementById('thread-display');
                 display.innerHTML = "";
@@ -185,13 +190,12 @@
                     const p = c.val();
                     const r = document.createElement('div');
                     r.className = 'thread-row';
-                    r.innerHTML = `<img src="${p.avatar || ''}" style="width:30px; margin-right:10px;"> 
+                    r.innerHTML = `<img src="${p.avatar || 'https://tr.rbxcdn.com/38c6ed8c6333b4984483d7155056e077/420/420/Avatar/Png'}" style="width:30px; height:30px; margin-right:10px; border-radius:50%;"> 
                                    <span class="clickable-name" onclick="window.loadProfile('${p.uid}')">${p.author}</span>: ${p.message}`;
                     display.prepend(r);
                 });
             });
 
-            // Sync Banner
             onValue(ref(db, 'announcement/text'), (s) => {
                 const banner = document.getElementById('announcement-container');
                 if(s.exists() && s.val() !== "") {
@@ -202,19 +206,19 @@
         } else {
             document.getElementById('auth-view').classList.remove('hidden');
             document.getElementById('logged-in-view').classList.add('hidden');
+            document.getElementById('user-display').innerText = "Guest";
         }
     });
 
-    // --- PROFILE LOGIC ---
     window.loadProfile = async (uid) => {
         showView('profile-view');
         const snap = await get(child(ref(db), `users/${uid}`));
+        if(!snap.exists()) return;
         const d = snap.val();
         document.getElementById('view-username').innerText = d.username;
         document.getElementById('view-bio').innerText = d.bio || "No bio.";
-        document.getElementById('view-avatar-img').src = d.avatar || "";
+        document.getElementById('view-avatar-img').src = d.avatar || "https://tr.rbxcdn.com/38c6ed8c6333b4984483d7155056e077/420/420/Avatar/Png";
         
-        // CEO Check
         if(uid === CEO_UID) document.getElementById('view-ceo').classList.remove('hidden');
         else document.getElementById('view-ceo').classList.add('hidden');
 
@@ -238,20 +242,30 @@
         update(ref(db, `users/${auth.currentUser.uid}`), {
             bio: document.getElementById('edit-bio').value,
             avatar: document.getElementById('edit-avatar-url').value || "https://tr.rbxcdn.com/38c6ed8c6333b4984483d7155056e077/420/420/Avatar/Png"
-        }).then(() => alert("Profile Saved!"));
+        }).then(() => {
+            alert("Profile Saved!");
+            location.reload();
+        });
     };
 
-    // --- CHAT ---
+    // FIXED POSTING LOGIC
     document.getElementById('submitPost').onclick = async () => {
         const msg = document.getElementById('post-input').value;
-        if(!msg) return;
+        if(!msg || !auth.currentUser) return;
+        
         const snap = await get(child(ref(db), `users/${auth.currentUser.uid}`));
-        const u = snap.val();
-        push(ref(db, 'threads'), { message: msg, author: u.username, uid: auth.currentUser.uid, avatar: u.avatar });
-        document.getElementById('post-input').value = "";
+        if(snap.exists()){
+            const u = snap.val();
+            push(ref(db, 'threads'), { 
+                message: msg, 
+                author: u.username, 
+                uid: auth.currentUser.uid, 
+                avatar: u.avatar || "https://tr.rbxcdn.com/38c6ed8c6333b4984483d7155056e077/420/420/Avatar/Png"
+            });
+            document.getElementById('post-input').value = "";
+        }
     };
 
-    // --- ADMIN ---
     document.getElementById('adminBtn').onclick = () => document.getElementById('admin-panel').classList.toggle('hidden');
     document.getElementById('postAnnounce').onclick = () => set(ref(db, 'announcement/text'), document.getElementById('announce-text').value);
     document.getElementById('applyUnban').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value.trim()}`), { banned: false });
