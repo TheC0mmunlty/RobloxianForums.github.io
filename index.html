@@ -11,26 +11,13 @@
         }
         header { background: #000; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #555; }
         
-        /* 2012 APRIL FOOLS STYLE BANNER */
         #announcement-container { 
-            background-color: #ff9800; 
-            border-bottom: 2px solid #b36b00; 
-            width: 100%;
-            padding: 6px 0;
-            text-align: center;
-            display: none; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            background-color: #ff9800; border-bottom: 2px solid #b36b00; width: 100%; padding: 6px 0; text-align: center; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
-        .announcement-text { 
-            font-family: 'Arial Black', Gadget, sans-serif; 
-            font-size: 14px; 
-            color: #fff; 
-            text-transform: uppercase;
-        }
+        .announcement-text { font-family: 'Arial Black', Gadget, sans-serif; font-size: 14px; color: #fff; text-transform: uppercase; }
 
         .main-wrapper { width: 900px; margin: 20px auto; background: #fff; border: 1px solid #888; min-height: 800px; box-shadow: 0px 0px 20px rgba(0,0,0,0.5); position: relative; }
         
-        /* Login Screen Art */
         #logged-out-view {
             background-image: url('https://cdn.discordapp.com/attachments/1395984013587386390/1497797311466569758/login_sign_up.png?ex=69eed3f2&is=69ed8272&hm=5763e511b207221de6dde3aa5ec39e6d79a9fc946c7e120fd94a3119fa121bc5'); 
             background-size: cover; background-position: center; min-height: 800px; display: flex; align-items: center; justify-content: center;
@@ -49,7 +36,6 @@
         
         .hidden { display: none !important; }
         
-        /* Profile & Bio Styles */
         #profile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 100; justify-content: center; align-items: center; }
         .profile-card { background: white; padding: 20px; border: 2px solid #555; width: 350px; text-align: center; border-radius: 8px; }
         .bio-box { background: #f4f4f4; border: 1px solid #ddd; padding: 10px; margin: 10px 0; font-size: 12px; color: #333; text-align: left; border-radius: 4px; min-height: 50px; }
@@ -90,12 +76,15 @@
 
         <div id="admin-panel" class="hidden" style="border: 2px dashed orange; padding: 15px; margin: 15px; background: #fffdf0;">
             <strong>Staff Controls</strong><br>
-            <input type="text" id="announce-text" placeholder="Set Announcement (2012 Style)" style="width: 80%;">
-            <button class="btn btn-admin" id="postAnnounce">Update Banner</button>
+            <input type="text" id="announce-text" placeholder="Set Announcement">
+            <button class="btn btn-admin" id="postAnnounce">Post</button>
             <button class="btn btn-danger" id="clearAnnounce">X</button>
             <hr>
-            <input type="text" id="target-uid" placeholder="User UID (Auto-fills on click)">
-            <button class="btn btn-danger" id="applyBan">Ban User</button>
+            <input type="text" id="target-uid" placeholder="User UID">
+            <div style="margin-bottom: 5px;">
+                <button class="btn btn-danger" id="applyBan">Ban User</button>
+                <button class="btn btn-admin" id="applyUnban">Unban User</button>
+            </div>
             <button class="btn btn-admin" id="applyAdmin">Promote</button>
             <button class="btn" id="applyUnrank">Unrank</button>
         </div>
@@ -145,8 +134,15 @@
         if (user) {
             const banSnap = await get(child(ref(db), `bans/${user.uid}`));
             if(banSnap.exists()){
-                document.body.innerHTML = `<div style="background:black; color:white; height:100vh; display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; font-family:Impact;"><h1>ACCESS DENIED</h1><p>REASON: ${banSnap.val().reason}</p></div>`;
-                return;
+                const bData = banSnap.val();
+                const now = Date.now();
+                if(bData.unbanTime && bData.unbanTime !== 0 && now > bData.unbanTime) {
+                    await remove(ref(db, `bans/${user.uid}`));
+                } else {
+                    let timeMsg = bData.unbanTime === 0 ? "PERMANENT" : new Date(bData.unbanTime).toLocaleString();
+                    document.body.innerHTML = `<div style="background:black; color:white; height:100vh; display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; font-family:Impact;"><h1>ACCESS DENIED</h1><p>REASON: ${bData.reason}</p><p>UNBAN DATE: ${timeMsg}</p></div>`;
+                    return;
+                }
             }
             document.getElementById('logged-in-view').classList.remove('hidden');
             document.getElementById('logged-out-view').classList.add('hidden');
@@ -163,11 +159,9 @@
                 const container = document.getElementById('announcement-container');
                 const display = document.getElementById('announcement-display');
                 if(s.exists() && s.val().text) {
-                    display.innerText = s.val().text;
-                    container.style.display = "block";
+                    display.innerText = s.val().text; container.style.display = "block";
                 } else { container.style.display = "none"; }
             });
-
             loadThreads();
         } else {
             document.getElementById('logged-out-view').classList.remove('hidden');
@@ -200,21 +194,15 @@
             document.getElementById('p-bio').innerText = d.bio || "No bio set.";
             document.getElementById('p-uid-display').innerText = "UID: " + uid;
             document.getElementById('profile-overlay').style.display = 'flex';
-            
-            // Auto-fill Admin Box
             if(!document.getElementById('adminBtn').classList.contains('hidden')) {
                 document.getElementById('target-uid').value = uid;
             }
-
             const editBtn = document.getElementById('edit-bio-btn');
             if(uid === auth.currentUser.uid) {
                 editBtn.classList.remove('hidden');
                 editBtn.onclick = () => {
                     const newBio = prompt("Edit your bio:", d.bio || "");
-                    if(newBio !== null) {
-                        update(ref(db, `users/${uid}`), { bio: newBio });
-                        document.getElementById('p-bio').innerText = newBio;
-                    }
+                    if(newBio !== null) { update(ref(db, `users/${uid}`), { bio: newBio }); document.getElementById('p-bio').innerText = newBio; }
                 };
             } else { editBtn.classList.add('hidden'); }
         }
@@ -225,11 +213,22 @@
         if(txt) set(ref(db, 'announcement'), { text: txt });
     };
     document.getElementById('clearAnnounce').onclick = () => remove(ref(db, 'announcement'));
+    
     document.getElementById('applyBan').onclick = () => {
         const uid = document.getElementById('target-uid').value;
         const reason = prompt("Ban reason?");
-        if(uid && reason) set(ref(db, `bans/${uid}`), { reason: reason }).then(()=>alert("User Banned"));
+        const days = prompt("Duration in days? (0 for Permanent)", "0");
+        if(uid && reason) {
+            const unbanTime = (days === "0" || !days) ? 0 : Date.now() + (parseInt(days) * 24 * 60 * 60 * 1000);
+            set(ref(db, `bans/${uid}`), { reason, unbanTime }).then(()=>alert("User Banned"));
+        }
     };
+
+    document.getElementById('applyUnban').onclick = () => {
+        const uid = document.getElementById('target-uid').value;
+        if(uid) remove(ref(db, `bans/${uid}`)).then(()=>alert("User Unbanned"));
+    };
+
     document.getElementById('applyAdmin').onclick = () => {
         const uid = document.getElementById('target-uid').value;
         if(uid) update(ref(db, `users/${uid}`), { rank: "admin" }).then(()=>alert("Promoted"));
