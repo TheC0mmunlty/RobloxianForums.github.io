@@ -4,67 +4,65 @@
     <meta charset="UTF-8">
     <title>The Robloxians Forum</title>
     <style>
-        body { font-family: Verdana, Arial; background-color: #E1E1E1; margin: 0; padding: 0; }
-        header { background: #000; color: white; padding: 12px; display: flex; justify-content: space-between; border-bottom: 3px solid #555; }
-        
-        /* THE ORANGE BANNER */
-        #announcement-banner { 
-            background: #FF8C00; 
-            border-bottom: 2px solid #CC7000; 
-            padding: 12px; 
-            text-align: center; 
-            font-size: 14px; 
-            font-weight: bold; 
-            color: white; 
-            display: none; /* Hidden by default until data arrives */
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        body { 
+            font-family: Verdana, Arial; 
+            margin: 0; 
+            padding: 0;
+            background-color: #000; /* Backup color */
+            /* LINK APPLIED BELOW */
+            background-image: url('https://wallpapercave.com/wp/wp9084955.jpg'); 
+            background-attachment: fixed; 
+            background-size: cover;
+            background-position: center;
         }
 
-        .main-wrapper { width: 950px; margin: 0 auto; background: white; border: 1px solid #888; min-height: 800px; box-shadow: 4px 4px 0px #888; position: relative; }
-        .auth-card { width: 400px; margin: 100px auto; border: 1px solid #0055ff; background: #f0f5ff; padding: 20px; text-align: center; }
-        input, select, textarea { width: 90%; padding: 8px; margin: 5px 0; border: 1px solid #999; font-family: Verdana; font-size: 12px; }
-        .forum-header { background: #ccc; border: 1px solid #999; padding: 8px; font-weight: bold; margin-top: 15px; font-size: 13px; }
-        .thread-row { border-bottom: 1px solid #eee; padding: 12px; display: flex; justify-content: space-between; align-items: flex-start; font-size: 12px; }
-        .clickable-name { color: #0055ff; cursor: pointer; text-decoration: underline; font-weight: bold; }
-        
-        /* MODALS */
-        #profile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 100; justify-content: center; align-items: center; }
-        .profile-card { background: white; padding: 20px; border: 2px solid #555; width: 350px; text-align: center; box-shadow: 5px 5px 0px #000; }
-        
-        .btn { background: #e1e1e1; border: 1px solid #777; padding: 5px 10px; cursor: pointer; font-size: 11px; }
-        .btn-admin { background: #ffcc00; font-weight: bold; border: 1px solid #998800; }
+        header { 
+            background: rgba(0, 0, 0, 0.85); /* Semi-transparent black header */
+            color: white; 
+            padding: 12px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-bottom: 2px solid #444; 
+            backdrop-filter: blur(5px); /* Makes the header look modern */
+        }
+
+        .main-wrapper { 
+            width: 950px; 
+            margin: 50px auto; 
+            background: #fff; 
+            border: 1px solid #333; 
+            min-height: 800px; 
+            box-shadow: 0px 0px 30px rgba(0,0,0,0.7); 
+            position: relative; 
+            border-radius: 4px; /* Slightly rounded edges for the forum box */
+        }
+
+        #announcement-banner { background: #FF8C00; border-bottom: 2px solid #CC7000; padding: 12px; text-align: center; font-size: 14px; font-weight: bold; color: white; display: none; }
+        .auth-card { width: 400px; margin: 100px auto; border: 1px solid #0055ff; background: #f0f5ff; padding: 20px; text-align: center; border-radius: 8px; }
+        input, select, textarea { width: 90%; padding: 8px; margin: 5px 0; border: 1px solid #bbb; font-size: 12px; border-radius: 3px; }
+        .forum-header { background: #ddd; border: 1px solid #bbb; padding: 10px; font-weight: bold; margin-top: 15px; font-size: 13px; color: #333; }
+        .thread-row { border-bottom: 1px solid #eee; padding: 12px; font-size: 12px; display: flex; justify-content: space-between; background: #fff; }
+        .btn { background: #eee; border: 1px solid #999; padding: 6px 12px; cursor: pointer; font-size: 11px; border-radius: 3px; }
+        .btn:hover { background: #e0e0e0; }
         .hidden { display: none !important; }
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: white; z-index: 1000; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px; }
     </style>
 </head>
 <body>
 
+<div id="loading-overlay">LOADING ASSETS...</div>
 <div id="announcement-banner"></div>
 
 <header>
-    <div style="font-weight:bold; font-size: 20px; letter-spacing: -1px;">THE ROBLOXIANS FORUM</div>
-    <div id="user-display" style="font-size: 11px; color: #ccc;">Guest</div>
+    <div style="font-weight:bold; font-size: 22px; letter-spacing: -1px;">THE ROBLOXIANS FORUM</div>
+    <div id="user-display" style="font-size: 11px; color: #aaa;">Guest</div>
 </header>
 
-<div id="profile-overlay">
-    <div class="profile-card">
-        <h2 id="p-name" style="margin:0;">User Profile</h2>
-        <p id="p-gender" style="font-size: 12px; color: #666;"></p>
-        <hr>
-        <div style="text-align: left; max-height: 150px; overflow-y: auto;">
-            <strong>Friends List:</strong>
-            <div id="p-friends">No friends yet.</div>
-        </div>
-        <hr>
-        <button class="btn" id="addFriendBtn">Add Friend</button>
-        <button class="btn" id="reportBtn" style="background:#ff4444; color:white;">Report User</button>
-        <button class="btn" onclick="document.getElementById('profile-overlay').style.display='none'">Close</button>
-    </div>
-</div>
-
 <div class="main-wrapper">
-    <div id="logged-out-view">
+    <div id="logged-out-view" class="hidden">
         <div class="auth-card">
-            <h3>Forum Login</h3>
+            <h3 style="margin-top:0;">Welcome! Please Log In</h3>
             <input type="text" id="reg-username" placeholder="Username">
             <input type="email" id="auth-email" placeholder="Email">
             <input type="password" id="auth-password" placeholder="Password">
@@ -77,38 +75,27 @@
     </div>
 
     <div id="logged-in-view" class="hidden">
-        <div style="background: #eee; padding: 10px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between;">
-            <span id="welcome-text" style="font-weight: bold;">Loading...</span>
-            <div>
-                <button class="btn btn-admin hidden" id="adminBtn">Admin Panel</button>
-                <button class="btn" id="logoutBtn">Logout</button>
-            </div>
+        <div style="background: #f9f9f9; padding: 12px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
+            <span id="welcome-text" style="font-weight:bold; font-size: 13px;">Syncing...</span>
+            <button class="btn" id="logoutBtn" style="color: #c00;">Logout</button>
         </div>
 
         <div style="padding: 20px;">
-            <div id="admin-panel" class="hidden" style="border: 2px dashed orange; padding: 15px; margin-bottom: 15px; background: #fffdf0;">
-                <strong style="color: #e67e22;">Admin: Announcement Control</strong><br>
-                <input type="text" id="admin-msg-input" placeholder="Type new banner message here..." style="width: 70%;">
-                <button class="btn" id="updateAnnouncement" style="background: #FF8C00; color: white;">Update Banner</button>
-                <button class="btn" id="clearAnnouncement">Clear</button>
+            <div class="forum-header">Public Square - Post Message</div>
+            <div style="padding: 15px; border: 1px solid #bbb; border-top: none; background: #fff;">
+                <textarea id="post-input" placeholder="What's happening in the community?" style="height: 60px;"></textarea>
+                <button class="btn" id="submitPost" style="margin-top:8px; font-weight: bold; background: #FF8C00; color: white; border: none; padding: 8px 16px;">Post to Thread</button>
             </div>
-
-            <div class="forum-header">General Discussion - Post Message</div>
-            <div style="padding: 10px; border: 1px solid #ccc; border-top: none;">
-                <textarea id="post-input" placeholder="No swearing! Filter is active."></textarea>
-                <button class="btn" id="submitPost" style="margin-top:5px; font-weight: bold;">Post Message</button>
-            </div>
-
-            <div class="forum-header">Thread List</div>
-            <div id="thread-display"></div>
+            <div class="forum-header">Recent Discussions</div>
+            <div id="thread-display" style="border: 1px solid #bbb; border-top: none;"></div>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, set, update, push, remove, onValue, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, set, push, onValue, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyANfmR8j_Z7mHmSO1GNXGnIGKTdBiU6uiU",
@@ -124,33 +111,25 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    const ADMIN_EMAIL = "fahid.001x@gmail.com"; 
-    let currentUsername = "";
-    let viewingUid = "";
+    let currentUsername = null;
 
-    // --- SWEAR FILTER ---
-    const badWords = ["fuck", "shit", "ass", "bitch", "crap", "nigger", "retard", "faggot", "cum", "kys", "kill yourself", "porn", "gooner", "nigga", "asshole", "shitting", "groom", "rape", "raped","dick", "xnxx", "faggoter", "cock", "fag", "dounche", "dounchebag"]; 
-    const censor = (text) => {
-        let cleaned = text;
-        badWords.forEach(word => {
-            const regex = new RegExp("\\b" + word + "\\b", "gi");
-            cleaned = cleaned.replace(regex, "#".repeat(word.length));
-        });
-        return cleaned;
-    };
-
-    // --- BANNER SYNC (Visible to everyone) ---
-    onValue(ref(db, 'site_settings/announcement'), (s) => {
-        const banner = document.getElementById('announcement-banner');
-        if(s.exists() && s.val() !== "") {
-            banner.innerText = s.val();
-            banner.style.display = "block";
+    onAuthStateChanged(auth, async (user) => {
+        document.getElementById('loading-overlay').classList.add('hidden');
+        if (user) {
+            const snap = await get(child(ref(db), `users/${user.uid}`));
+            if(snap.exists()) {
+                currentUsername = snap.val().username;
+                document.getElementById('welcome-text').innerText = "Logged in as: " + currentUsername;
+                document.getElementById('user-display').innerText = user.email;
+                document.getElementById('logged-in-view').classList.remove('hidden');
+                loadPosts();
+            }
         } else {
-            banner.style.display = "none";
+            document.getElementById('logged-out-view').classList.remove('hidden');
+            document.getElementById('logged-in-view').classList.add('hidden');
         }
     });
 
-    // --- AUTH ACTIONS ---
     document.getElementById('signupBtn').onclick = async () => {
         const u = document.getElementById('reg-username').value;
         const e = document.getElementById('auth-email').value;
@@ -165,96 +144,42 @@
     };
 
     document.getElementById('loginBtn').onclick = () => {
-        signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-password').value).catch(err => alert(err.message));
+        signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-password').value);
     };
-    document.getElementById('logoutBtn').onclick = () => signOut(auth);
 
-    // --- POSTING ---
+    document.getElementById('logoutBtn').onclick = () => signOut(auth).then(() => location.reload());
+
     document.getElementById('submitPost').onclick = async () => {
-        let rawMsg = document.getElementById('post-input').value;
-        if(!rawMsg) return;
-        const cleanMsg = censor(rawMsg);
-        try {
-            await push(ref(db, 'threads'), {
-                message: cleanMsg, author: currentUsername, uid: auth.currentUser.uid,
-                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-            });
-            document.getElementById('post-input').value = "";
-        } catch(err) { alert(err.message); }
-    };
-
-    // --- PROFILE & ADMIN ---
-    window.openProfile = async (uid) => {
-        viewingUid = uid;
-        const snap = await get(child(ref(db), `users/${uid}`));
-        if(snap.exists()) {
-            const data = snap.val();
-            document.getElementById('p-name').innerText = data.username;
-            document.getElementById('p-gender').innerText = data.gender;
-            document.getElementById('profile-overlay').style.display = 'flex';
-            onValue(ref(db, `friends/${uid}`), (s) => {
-                const list = document.getElementById('p-friends');
-                list.innerHTML = s.exists() ? "" : "No friends yet.";
-                s.forEach(child => { list.innerHTML += `<div style="font-size:11px; padding:2px;">⭐ ${child.val().name}</div>`; });
-            });
-        }
-    };
-
-    document.getElementById('addFriendBtn').onclick = async () => {
-        if(viewingUid === auth.currentUser.uid) return alert("Can't friend yourself!");
-        await set(ref(db, `friends/${auth.currentUser.uid}/${viewingUid}`), { name: document.getElementById('p-name').innerText });
-        alert("Friend added!");
-    };
-
-    document.getElementById('updateAnnouncement').onclick = () => {
-        const msg = document.getElementById('admin-msg-input').value;
-        set(ref(db, 'site_settings/announcement'), msg).then(() => {
-            alert("Banner Updated!");
-            document.getElementById('admin-msg-input').value = "";
+        if(!currentUsername) return;
+        const msg = document.getElementById('post-input').value;
+        if(!msg) return;
+        await push(ref(db, 'threads'), {
+            message: msg, author: currentUsername, uid: auth.currentUser.uid, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
         });
+        document.getElementById('post-input').value = "";
     };
 
-    document.getElementById('clearAnnouncement').onclick = () => {
-        set(ref(db, 'site_settings/announcement'), "");
-    };
-
-    window.deletePost = (id) => { if(confirm("Delete?")) remove(ref(db, 'threads/'+id)); };
-
-    // --- AUTH OBSERVER ---
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            document.getElementById('logged-out-view').classList.add('hidden');
-            document.getElementById('logged-in-view').classList.remove('hidden');
-            document.getElementById('user-display').innerText = user.email;
-
-            const snap = await get(child(ref(db), `users/${user.uid}`));
-            currentUsername = snap.exists() ? snap.val().username : user.email;
-            document.getElementById('welcome-text').innerText = "Welcome, " + currentUsername;
-
-            const isAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-            if(isAdmin) document.getElementById('adminBtn').classList.remove('hidden');
-
-            onValue(ref(db, 'threads'), (s) => {
-                const display = document.getElementById('thread-display');
-                display.innerHTML = "";
-                s.forEach((childSnap) => {
-                    const post = childSnap.val();
-                    const id = childSnap.key;
-                    const del = (post.uid === user.uid || isAdmin) ? `<button class="btn" onclick="deletePost('${id}')" style="color:red; border:none; background:none;">[x]</button>` : "";
-                    display.insertAdjacentHTML('afterbegin', `
-                        <div class="thread-row">
-                            <div><span class="clickable-name" onclick="openProfile('${post.uid}')">${post.author}</span>: <span>${post.message}</span></div>
-                            ${del}
-                        </div>`);
-                });
+    function loadPosts() {
+        onValue(ref(db, 'threads'), (s) => {
+            const display = document.getElementById('thread-display');
+            display.innerHTML = "";
+            s.forEach((child) => {
+                const p = child.val();
+                display.insertAdjacentHTML('afterbegin', `
+                    <div class="thread-row">
+                        <div><b style="color:#0055ff;">${p.author}</b>: ${p.message}</div>
+                        <div style="color:#999; font-size:10px;">${p.time}</div>
+                    </div>`);
             });
-        } else {
-            document.getElementById('logged-out-view').classList.remove('hidden');
-            document.getElementById('logged-in-view').classList.add('hidden');
-        }
-    });
+        });
+    }
 
-    document.getElementById('adminBtn').onclick = () => document.getElementById('admin-panel').classList.toggle('hidden');
+    onValue(ref(db, 'site_settings/announcement'), (s) => {
+        const b = document.getElementById('announcement-banner');
+        if(s.exists() && s.val() !== "") {
+            b.innerText = s.val(); b.style.display = "block";
+        } else { b.style.display = "none"; }
+    });
 </script>
 </body>
 </html>
