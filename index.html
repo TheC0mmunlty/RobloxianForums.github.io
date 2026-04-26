@@ -20,6 +20,7 @@
         .btn-admin { background: #ffcc00; font-weight: bold; border-color: #b89600; }
         .btn-danger { background: #ff4444; color: white; border: 1px solid #800; }
         .btn-success { background: #28a745; color: white; border: 1px solid #1e7e34; }
+        .btn-neutral { background: #6c757d; color: white; border: 1px solid #444; }
         .hidden { display: none !important; }
         #profile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 100; justify-content: center; align-items: center; }
         .profile-card { background: white; padding: 20px; border: 2px solid #555; width: 350px; text-align: center; }
@@ -31,7 +32,7 @@
 <div id="ban-view" class="hidden">
     <h1 style="font-family: Arial Black; font-size: 50px;">BANNED</h1>
     <p id="ban-reason-text" style="font-size: 24px;"></p>
-    <p style="margin-top: 20px;">Your account has been permanently banned.</p>
+    <p style="margin-top: 20px;">Your access has been permanently banned.</p>
 </div>
 
 <header>
@@ -64,12 +65,13 @@
         </div>
 
         <div id="admin-panel" class="hidden" style="border: 2px dashed orange; padding: 15px; margin: 15px; background: #fffdf0;">
-            <strong>The Admin Dashboard</strong><br>
+            <strong>Admin Tools</strong><br>
             <input type="text" id="target-uid" placeholder="User UID" style="width: 80%; margin-top:5px;"><br>
             <div style="margin-top: 10px;">
                 <button class="btn btn-danger" id="applyBan">Ban</button>
                 <button class="btn btn-success" id="applyUnban">Unban</button>
                 <button class="btn btn-admin" id="applyAdmin">Make Admin</button>
+                <button class="btn btn-neutral" id="applyUnrank">Unrank</button>
             </div>
         </div>
 
@@ -115,9 +117,8 @@
     const db = getDatabase(app);
     const OWNER_EMAIL = "fahid.001x@gmail.com"; 
 
-    // Replace with your uploaded image URLs
-    const OWNER_ICON = "https://imgur.com/a/cUzaTFG"; 
-    const ADMIN_ICON = "https://imgur.com/a/cUzaTFG";
+    const OWNER_ICON = "https://cdn-icons-png.flaticon.com/16/616/616412.png"; 
+    const ADMIN_ICON = "https://cdn-icons-png.flaticon.com/16/1067/1067357.png";
 
     const badWords = ["fuck", "shit", "ass", "bitch", "crap", "nigger", "retard", "faggot", "cum", "kys", "kill yourself", "porn", "gooner", "nigga", "asshole", "shitting", "groom", "rape", "raped","dick", "xnxx", "faggoter", "cock", "fag", "dounche", "dounchebag"];
     const filterText = (text) => {
@@ -216,7 +217,19 @@
 
     document.getElementById('applyAdmin').onclick = () => {
         const uid = document.getElementById('target-uid').value;
-        if(uid) update(ref(db, `users/${uid}`), { rank: "admin" }).then(() => alert("Promoted."));
+        if(uid) update(ref(db, `users/${uid}`), { rank: "admin" }).then(() => alert("Promoted to Admin."));
+    };
+
+    document.getElementById('applyUnrank').onclick = async () => {
+        const uid = document.getElementById('target-uid').value;
+        if(uid) {
+            const snap = await get(child(ref(db), `users/${uid}`));
+            if(snap.exists() && snap.val().email === OWNER_EMAIL) {
+                alert("You cannot unrank the Owner!");
+                return;
+            }
+            update(ref(db, `users/${uid}`), { rank: "member" }).then(() => alert("User unranked to Member."));
+        }
     };
 
     document.getElementById('submitPost').onclick = () => {
