@@ -15,7 +15,6 @@
         .announcement-text { font-family: 'Arial Black', Gadget, sans-serif; font-size: 14px; color: #fff; text-transform: uppercase; }
 
         .main-wrapper { width: 900px; margin: 20px auto; background: #fff; border: 1px solid #888; min-height: 800px; box-shadow: 0px 0px 20px rgba(0,0,0,0.5); position: relative; }
-        
         .auth-card { width: 380px; border: 4px solid #0055ff; background: rgba(255, 255, 255, 0.95); padding: 25px; text-align: center; border-radius: 15px; }
         input, select, textarea { width: 90%; padding: 8px; margin: 6px 0; border: 1px solid #999; font-size: 13px; border-radius: 4px; }
         .forum-header { background: #ccc; padding: 8px; font-weight: bold; margin-top: 15px; font-size: 13px; border: 1px solid #999; }
@@ -59,7 +58,7 @@
         <div style="background: #e1e1e1; padding: 8px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between;">
             <span id="welcome-text" style="font-size: 11px; font-weight: bold;">Loading...</span>
             <div>
-                <button class="btn btn-admin hidden" id="adminBtn">Admin Panel</button>
+                <button class="btn btn-admin hidden" id="adminBtn">Admin Dashboard</button>
                 <button class="btn btn-danger" id="logoutBtn">Logout</button>
             </div>
         </div>
@@ -97,7 +96,7 @@
             <button class="btn" id="save-theme-btn">Save Decoration</button>
         </div>
         <button id="edit-bio-btn" class="btn hidden">Edit Bio</button>
-        <div id="p-uid-display" style="font-size: 9px; color: #999; margin-top: 10px; word-break: break-all;"></div>
+        <div id="p-uid-display" style="font-size: 10px; color: #666; margin-top: 15px; background: #eee; padding: 5px; border-radius: 4px;"></div>
         <hr>
         <button class="btn" onclick="document.getElementById('profile-overlay').style.display='none'">Close</button>
     </div>
@@ -144,6 +143,7 @@
                 loadLogs();
             }
 
+            // BANNER LOGIC
             onValue(ref(db, 'announcement'), (s) => {
                 const display = document.getElementById('announcement-display');
                 if(s.exists() && s.val().text) {
@@ -163,7 +163,8 @@
 
     function loadLogs() {
         onValue(ref(db, 'admin_logs'), (s) => {
-            const logBox = document.getElementById('admin-logs'); logBox.innerHTML = "";
+            const logBox = document.getElementById('admin-logs'); 
+            logBox.innerHTML = "";
             s.forEach(c => {
                 const item = document.createElement('div');
                 item.innerText = `[${c.val().time}] ${c.val().msg}`;
@@ -172,13 +173,14 @@
         });
     }
 
-    // FIXED LOADTHREADS: No more white screen, no more "pushing"
+    // ULTIMATE PUSH FIX: Fetches all users once to speed up the loop
     async function loadThreads() {
         onValue(ref(db, 'threads'), async (snapshot) => {
             const displayArea = document.getElementById('thread-display');
-            displayArea.innerHTML = ""; // Clear list
+            displayArea.innerHTML = ""; 
 
-            if (!snapshot.exists()) return;
+            const usersSnap = await get(child(ref(db), 'users'));
+            const allUsers = usersSnap.val() || {};
 
             let threads = [];
             snapshot.forEach(childSnap => {
@@ -186,13 +188,11 @@
             });
             threads.reverse();
 
-            for (let post of threads) {
-                const uSnap = await get(child(ref(db), `users/${post.uid}`));
-                const uD = uSnap.val();
-                
+            threads.forEach(post => {
+                const uD = allUsers[post.uid] || {};
                 let displayColor = "#0055ff";
-                if(uD && uD.themeColor) displayColor = uD.themeColor;
-                else if(uD && uD.email && uD.email.toLowerCase() === OWNER_EMAIL) displayColor = "#FF0000";
+                if(uD.themeColor) displayColor = uD.themeColor;
+                else if(uD.email && uD.email.toLowerCase() === OWNER_EMAIL) displayColor = "#FF0000";
 
                 const row = document.createElement('div');
                 row.className = 'thread-row';
@@ -201,7 +201,7 @@
                     ${isStaff ? `<button class="btn-danger" style="padding:2px 5px; font-size:9px;" onclick="deletePost('${post.id}', '${post.author}', '${post.message}')">DEL</button>` : ""}
                 `;
                 displayArea.appendChild(row);
-            }
+            });
         });
     }
 
@@ -218,8 +218,10 @@
             const d = snap.val();
             document.getElementById('p-name').innerText = d.username;
             document.getElementById('p-bio').innerText = d.bio || "No bio set.";
-            document.getElementById('p-uid-display').innerText = "UID: " + uid;
+            // FIXED ID DISPLAY
+            document.getElementById('p-uid-display').innerText = "UID: " + uid; 
             document.getElementById('profile-overlay').style.display = 'flex';
+            
             if(isStaff) document.getElementById('target-uid').value = uid;
 
             if(uid === auth.currentUser.uid) {
@@ -236,6 +238,7 @@
         }
     };
 
+    // ADMIN DASHBOARD ACTIONS
     document.getElementById('postAnnounce').onclick = () => set(ref(db, 'announcement'), { text: document.getElementById('announce-text').value });
     document.getElementById('applyBan').onclick = () => {
         const uid = document.getElementById('target-uid').value;
