@@ -8,8 +8,8 @@
         body { font-family: "MS Sans Serif", Geneva, sans-serif; margin: 0; background: #ccc url('https://wallpapercave.com/wp/wp9084955.jpg') fixed center; background-size: cover; }
         header { background: #0055ff; color: white; padding: 8px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #0033aa; }
         
-        /* BANNER FIX */
-        #announcement-container { background: #ff9800; border-bottom: 2px solid #cc7a00; color: #fff; padding: 12px; font-weight: bold; text-align: center; display: none; font-size: 14px; position: relative; z-index: 99; }
+        /* GLOBAL BANNER SYSTEM */
+        #announcement-container { background: #ff9800; border-bottom: 2px solid #cc7a00; color: #fff; padding: 12px; font-weight: bold; text-align: center; display: none; font-size: 14px; position: relative; z-index: 100; }
         
         .main-wrapper { width: 950px; margin: 20px auto; background: rgba(238, 238, 238, 0.95); border: 1px solid #888; min-height: 600px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.4); }
         .hidden { display: none !important; }
@@ -19,7 +19,7 @@
         .btn-admin { background: #ffff00; color: #000; border: 1px solid #777; }
         
         /* AVATAR RENDERING */
-        .avatar-frame { width: 80px; height: 110px; position: relative; background: #e1e1e1; border: 1px solid #999; display: flex; flex-direction: column; align-items: center; transform: scale(0.8); margin-top: 15px; overflow: visible; }
+        .avatar-frame { width: 80px; height: 110px; position: relative; background: #e1e1e1; border: 1px solid #999; display: flex; flex-direction: column; align-items: center; transform: scale(0.8); margin-top: 25px; }
         .char-head { width: 20px; height: 20px; border: 1px solid rgba(0,0,0,0.2); z-index: 5; position: relative; }
         .char-torso { width: 40px; height: 40px; border: 1px solid rgba(0,0,0,0.2); position: relative; }
         .char-arm { width: 15px; height: 38px; border: 1px solid rgba(0,0,0,0.2); position: absolute; top: 0; }
@@ -27,19 +27,25 @@
         .arm-r { right: -16px; transform: rotate(-5deg); }
         .char-leg { width: 18px; height: 40px; border: 1px solid rgba(0,0,0,0.2); display: inline-block; }
         
-        /* HATS */
+        /* CSS BUILT DOMINO CROWN */
+        .hat-domino-css { 
+            width: 24px; height: 6px; background: #333; 
+            position: absolute; top: -6px; left: -2px; border: 1px solid #000; z-index: 10;
+        }
+        /* The "bricks/dominoes" on top */
+        .hat-domino-css::before {
+            content: ''; position: absolute; top: -10px; left: 0;
+            width: 6px; height: 10px; background: #eee; border: 1px solid #000;
+            box-shadow: 8px 0 0 #eee, 8px 0 0 0 #000, 16px 0 0 #eee, 16px 0 0 0 #000;
+        }
+
         .hat-top-hat { width: 24px; height: 15px; background: #222; position: absolute; top: -14px; left: -2px; border: 1px solid #000; z-index: 10; }
         .hat-top-hat::after { content: ''; width: 34px; height: 3px; background: #222; position: absolute; bottom: -1px; left: -5px; border: 1px solid #000; }
-        
-        .hat-domino { width: 34px; height: 34px; position: absolute; top: -28px; left: -7px; z-index: 10; background: url('domino crown.png') no-repeat center; background-size: contain; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); }
 
         .ceo-glow { outline: 3px solid gold !important; box-shadow: 0 0 15px gold; }
         .user-id-tag { font-size: 10px; color: #666; margin-bottom: 5px; }
-
         .thread-row { border-bottom: 1px solid #ddd; padding: 12px; background: #fff; display: flex; align-items: center; position: relative; }
         .delete-btn { position: absolute; right: 10px; top: 10px; font-size: 10px; padding: 2px 5px; color: red; border: 1px solid red; background: none; cursor: pointer; }
-        
-        #admin-panel { border: 2px solid #0055ff; padding: 15px; background: #fff; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -72,28 +78,28 @@
             </div>
         </div>
 
-        <div id="admin-panel" class="hidden">
-            <h3 style="margin-top:0;">Staff Tools</h3>
+        <div id="admin-panel" class="hidden" style="border: 2px solid #0055ff; padding: 15px; background: #fff; margin-bottom: 15px;">
+            <h3 style="margin:0 0 10px 0;">Staff Tools</h3>
             <div id="admin-only-section" class="hidden">
                 <strong>Global Banner:</strong> 
-                <input type="text" id="announce-text" placeholder="Update site banner..." style="width:60%;">
-                <button class="btn btn-submit" id="postAnnounce">Update Banner</button>
+                <input type="text" id="announce-text" placeholder="Banner text...">
+                <button class="btn btn-submit" id="postAnnounce">Save</button>
                 <hr>
-                <strong>Manage Ranks:</strong><br>
-                UID: <input type="text" id="rank-uid" placeholder="User ID">
-                Rank: <select id="rank-select" class="btn"><option value="0">Player</option><option value="1">Moderator</option><option value="2">Admin</option></select>
-                <button class="btn btn-submit" id="applyRank">Save Rank</button>
+                <strong>Set Rank:</strong><br>
+                UID: <input type="text" id="rank-uid">
+                <select id="rank-select" class="btn"><option value="0">Player</option><option value="1">Mod</option><option value="2">Admin</option></select>
+                <button class="btn btn-submit" id="applyRank">Update</button>
                 <hr>
             </div>
             <strong>Moderation:</strong><br>
-            Target UID: <input type="text" id="target-uid" placeholder="User ID">
-            <button class="btn btn-danger" id="applyBan">Ban User</button>
-            <button class="btn" id="applyUnban">Unban User</button>
+            Target UID: <input type="text" id="target-uid">
+            <button class="btn btn-danger" id="applyBan">Ban</button>
+            <button class="btn" id="applyUnban">Unban</button>
         </div>
 
         <div id="forum-home">
             <textarea id="post-input" placeholder="What's on your mind?" style="width:100%; height: 50px;"></textarea>
-            <button class="btn btn-submit" id="submitPost">Post Message</button>
+            <button class="btn btn-submit" id="submitPost">Submit Post</button>
             <div id="thread-display" style="margin-top: 20px;"></div>
         </div>
 
@@ -103,24 +109,18 @@
                 <div style="flex-grow: 1;">
                     <h2 id="view-username" style="margin:0;">User</h2>
                     <div id="view-id" class="user-id-tag">UID: 0</div>
-                    <p id="view-bio" style="border-left: 3px solid #0055ff; padding: 10px; background: #f9f9f9;">Legacy Member</p>
+                    <p id="view-bio" style="border-left: 3px solid #0055ff; padding-left: 10px; background: #f9f9f9; padding: 10px;">Legacy Member</p>
                     
-                    <div id="customizer-box" class="hidden" style="margin-top:20px; padding-top:10px; border-top: 1px dashed #ccc;">
-                        <strong>Edit Character</strong><br>
-                        <div style="margin: 10px 0;">
-                            Bio: <input type="text" id="edit-bio" style="width:80%;"><br><br>
-                            Skin: <input type="color" id="color-h"> 
-                            Torso: <input type="color" id="color-t"> 
-                            Legs: <input type="color" id="color-l">
-                        </div>
-                        <div>
-                            Hat: <select id="hat-select">
-                                <option value="none">None</option>
-                                <option value="tophat">Top Hat</option>
-                                <option value="domino">Domino Crown</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-submit" id="saveProfile" style="margin-top:10px;">Update Profile</button>
+                    <div id="customizer-box" class="hidden" style="margin-top:20px; border-top: 1px dashed #ccc; padding-top:10px;">
+                        <strong>Character Customizer</strong><br>
+                        Bio: <input type="text" id="edit-bio" style="width:70%;"><br><br>
+                        Skin: <input type="color" id="color-h"> Torso: <input type="color" id="color-t"> Legs: <input type="color" id="color-l"><br><br>
+                        Hat: <select id="hat-select">
+                            <option value="none">None</option>
+                            <option value="tophat">Top Hat</option>
+                            <option value="domino">Domino Crown (CSS)</option>
+                        </select>
+                        <button class="btn btn-submit" id="saveProfile" style="margin-top:10px;">Save Character</button>
                     </div>
                 </div>
             </div>
@@ -153,7 +153,7 @@
     function createAvatarHTML(colors, isCEO, hat) {
         let hatHtml = '';
         if(hat === 'tophat') hatHtml = `<div class="hat-top-hat"></div>`;
-        if(hat === 'domino') hatHtml = `<div class="hat-domino"></div>`;
+        if(hat === 'domino') hatHtml = `<div class="hat-domino-css"></div>`;
         
         const c = colors || {h:'#f5cd30', t:'#0d5f97', l:'#a06110'};
         return `<div class="avatar-frame ${isCEO ? 'ceo-glow' : ''}">
@@ -169,7 +169,6 @@
                 const data = snap.val();
                 if(!data) return;
                 if(data.banned) { signOut(auth).then(()=>location.reload()); return; }
-                
                 currentUserRank = data.rank || 0;
                 if(currentUserRank >= 1 || user.email === OWNER_EMAIL) {
                     document.getElementById('adminBtn').classList.remove('hidden');
@@ -179,7 +178,7 @@
                 document.getElementById('user-display').innerText = data.username;
             });
 
-            // BANNER LISTENER (FIXED)
+            // BANNER LISTENER
             onValue(ref(db, 'announcement/text'), (s) => {
                 const banner = document.getElementById('announcement-container');
                 if(s.exists() && s.val() !== "") {
@@ -198,18 +197,17 @@
                 const allUsers = usersSnap.val() || {};
                 s.forEach(c => {
                     const postId = c.key; const p = c.val(); const author = allUsers[p.uid] || {};
-                    const canDelete = (currentUserRank >= 1) || (p.uid === auth.currentUser.uid);
                     const div = document.createElement('div');
                     div.className = 'thread-row';
                     div.innerHTML = `${createAvatarHTML(author.colors, p.uid === CEO_UID, author.hat)}
                         <div style="margin-left:20px;">
                             <strong style="color:#0055ff; cursor:pointer;" onclick="loadProfile('${p.uid}')">${author.username}</strong><br>${p.message}
                         </div>
-                        ${canDelete ? `<button class="delete-btn" onclick="deletePost('${postId}')">Delete</button>` : ""}`;
+                        ${(currentUserRank >= 1 || p.uid === auth.currentUser.uid) ? `<button class="delete-btn" onclick="deletePost('${postId}')">Delete</button>` : ""}`;
                     display.prepend(div);
                 });
             });
-        } else { document.getElementById('auth-view').classList.remove('hidden'); }
+        }
     });
 
     // STAFF FUNCTIONS
@@ -241,7 +239,7 @@
             bio: document.getElementById('edit-bio').value,
             hat: document.getElementById('hat-select').value,
             colors: { h: document.getElementById('color-h').value, t: document.getElementById('color-t').value, l: document.getElementById('color-l').value }
-        }).then(() => alert("Saved!"));
+        }).then(() => { alert("Updated!"); loadProfile(auth.currentUser.uid); });
     };
 
     document.getElementById('submitPost').onclick = () => {
