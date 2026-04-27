@@ -14,26 +14,29 @@
         .btn-submit { background: #ffcc00; border-color: #ccaa00; }
         .btn-danger { background: #ff4444; color: white; border: 1px solid #aa0000; }
         .btn-admin { background: #ffff00; color: #000; border: 1px solid #777; }
-        .thread-row { border-bottom: 1px solid #ddd; padding: 12px; background: #fff; display: flex; align-items: center; position: relative; }
         
-        .avatar-frame { width: 80px; height: 110px; position: relative; background: #e1e1e1; border: 1px solid #999; display: flex; flex-direction: column; align-items: center; transform: scale(0.8); }
-        .char-head { width: 20px; height: 20px; border: 1px solid rgba(0,0,0,0.2); z-index: 5; }
+        /* AVATAR & HAT STYLES */
+        .avatar-frame { width: 80px; height: 110px; position: relative; background: #e1e1e1; border: 1px solid #999; display: flex; flex-direction: column; align-items: center; transform: scale(0.8); margin-top: 15px; }
+        .char-head { width: 20px; height: 20px; border: 1px solid rgba(0,0,0,0.2); z-index: 5; position: relative; }
         .char-torso { width: 40px; height: 40px; border: 1px solid rgba(0,0,0,0.2); position: relative; }
         .char-arm { width: 15px; height: 38px; border: 1px solid rgba(0,0,0,0.2); position: absolute; top: 0; }
         .arm-l { left: -16px; transform: rotate(5deg); }
         .arm-r { right: -16px; transform: rotate(-5deg); }
         .char-leg { width: 18px; height: 40px; border: 1px solid rgba(0,0,0,0.2); display: inline-block; }
         
+        .hat-top-hat { width: 24px; height: 15px; background: #222; position: absolute; top: -14px; left: -2px; border: 1px solid #000; z-index: 10; }
+        .hat-top-hat::after { content: ''; width: 34px; height: 3px; background: #222; position: absolute; bottom: -1px; left: -5px; border: 1px solid #000; }
+
         .ceo-glow { outline: 3px solid gold !important; box-shadow: 0 0 15px gold; }
         .ceo-badge { background: gold; color: black; font-weight: bold; padding: 2px 5px; font-size: 10px; border: 1px solid #000; display: inline-block; }
-        .user-id-tag { font-size: 10px; color: #666; margin-left: 5px; }
+        .user-id-tag { font-size: 10px; color: #666; margin-bottom: 5px; }
+
+        .thread-row { border-bottom: 1px solid #ddd; padding: 12px; background: #fff; display: flex; align-items: center; position: relative; }
+        .delete-btn { position: absolute; right: 10px; top: 10px; font-size: 10px; padding: 2px 5px; color: red; border: 1px solid red; background: none; cursor: pointer; }
 
         .auth-box { text-align: center; padding: 40px; }
         .auth-box input { display: block; margin: 10px auto; padding: 8px; width: 250px; border: 1px solid #777; }
         #admin-panel { border: 2px solid #0055ff; padding: 15px; background: #fff; margin-bottom: 15px; }
-        
-        .delete-btn { position: absolute; right: 10px; top: 10px; font-size: 10px; padding: 2px 5px; color: red; border: 1px solid red; background: none; cursor: pointer; }
-        .delete-btn:hover { background: #ffeeee; }
     </style>
 </head>
 <body>
@@ -70,7 +73,6 @@
 
         <div id="admin-panel" class="hidden">
             <h3 id="panel-title">Staff Dashboard</h3>
-            
             <div id="admin-only-section" class="hidden">
                 <strong>Global Banner:</strong> 
                 <input type="text" id="announce-text" placeholder="Global message..." style="width:50%;">
@@ -86,15 +88,12 @@
                 <button class="btn btn-submit" id="applyRank">Update Rank</button>
                 <hr>
             </div>
-
             <strong>Ban Hammer:</strong><br>
             Target UID: <input type="text" id="target-uid" placeholder="Paste UID here...">
-            Reason: <input type="text" id="ban-reason-input" placeholder="Enter reason for player...">
+            Reason: <input type="text" id="ban-reason-input" placeholder="Reason...">
             Length: <select id="ban-duration" class="btn">
                 <option value="perm">Permanent</option>
                 <option value="1">1 Day</option>
-                <option value="3">3 Days</option>
-                <option value="7">7 Days</option>
             </select>
             <button class="btn btn-danger" id="applyBan">Apply Ban</button>
             <button class="btn" id="applyUnban">Unban User</button>
@@ -107,13 +106,28 @@
         </div>
 
         <div id="profile-view" class="hidden">
-            <div style="display:flex; background:white; padding:20px; border:1px solid #ccc;">
-                <div class="profile-large" id="profile-render"></div>
-                <div style="margin-left: 100px;">
-                    <h2 id="view-username">User</h2>
+            <div style="display:flex; background:white; padding:20px; border:1px solid #ccc; gap:30px;">
+                <div id="profile-render" style="transform: scale(1.4); margin: 20px;"></div>
+                <div style="flex-grow: 1;">
+                    <h2 id="view-username" style="margin:0;">User</h2>
                     <div id="view-id" class="user-id-tag">ID: 0</div>
                     <div id="ceo-tag" class="hidden ceo-badge">CEO</div>
-                    <p id="view-bio">Legacy Member</p>
+                    <p id="view-bio" style="font-style: italic; color: #444; border-left: 3px solid #ccc; padding-left: 10px;">Legacy Member</p>
+                    
+                    <div id="customizer-box" class="hidden" style="margin-top:20px; padding-top:10px; border-top: 1px dashed #ccc;">
+                        <strong>Character Customizer</strong><br>
+                        <div style="margin: 10px 0;">
+                            Bio: <input type="text" id="edit-bio" style="width:70%;" placeholder="Bio..."><br>
+                            Head: <input type="color" id="color-h"> Torso: <input type="color" id="color-t"> Legs: <input type="color" id="color-l">
+                        </div>
+                        <div>
+                            Hat: <select id="hat-select">
+                                <option value="none">None</option>
+                                <option value="tophat">Top Hat</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-submit" id="saveProfile" style="margin-top:10px;">Update Profile</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -138,24 +152,18 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
-    
     const OWNER_EMAIL = "fahid.001x@gmail.com";
     const CEO_UID = "oJm6Z87yVpMe5YgO7G4H0vU7T9m2";
     let currentUserRank = 0;
 
-    const BAD_WORDS = ["badword1", "badword2", "badword3"]; 
-
-    function filterText(text) {
-        let clean = text;
-        BAD_WORDS.forEach(word => {
-            const regex = new RegExp(word, "gi");
-            clean = clean.replace(regex, "####");
-        });
-        return clean;
-    }
-
-    function createAvatarHTML(colors, isCEO) {
-        return `<div class="avatar-frame ${isCEO ? 'ceo-glow' : ''}"><div class="char-head" style="background:${colors.h}"></div><div class="char-torso" style="background:${colors.t}"><div class="char-arm arm-l" style="background:${colors.h}"></div><div class="char-arm arm-r" style="background:${colors.h}"></div></div><div style="display:flex;"><div class="char-leg" style="background:${colors.l}"></div><div class="char-leg" style="background:${colors.l}"></div></div></div>`;
+    function createAvatarHTML(colors, isCEO, hat) {
+        const hatHtml = (hat === 'tophat') ? `<div class="hat-top-hat"></div>` : '';
+        const c = colors || {h:'#f5cd30', t:'#0d5f97', l:'#a06110'};
+        return `<div class="avatar-frame ${isCEO ? 'ceo-glow' : ''}">
+            <div class="char-head" style="background:${c.h}">${hatHtml}</div>
+            <div class="char-torso" style="background:${c.t}"><div class="char-arm arm-l" style="background:${c.h}"></div><div class="char-arm arm-r" style="background:${c.h}"></div></div>
+            <div style="display:flex;"><div class="char-leg" style="background:${c.l}"></div><div class="char-leg" style="background:${c.l}"></div></div>
+        </div>`;
     }
 
     onAuthStateChanged(auth, async (user) => {
@@ -163,25 +171,12 @@
             onValue(ref(db, `users/${user.uid}`), (snap) => {
                 const data = snap.val();
                 if(!data) return;
-
-                if(data.banned === true) {
-                    const now = Date.now();
-                    if(data.banExpires === "perm" || now < data.banExpires) {
-                        alert(`BANNED\nReason: ${data.banReason || "No reason given"}`);
-                        signOut(auth).then(()=>location.reload());
-                    } else {
-                        update(ref(db, `users/${user.uid}`), { banned: false });
-                    }
-                }
-
+                if(data.banned) { signOut(auth).then(()=>location.reload()); return; }
                 currentUserRank = data.rank || 0;
                 if(currentUserRank >= 1 || user.email === OWNER_EMAIL) {
                     document.getElementById('adminBtn').classList.remove('hidden');
-                    if(currentUserRank >= 2 || user.email === OWNER_EMAIL) {
-                        document.getElementById('admin-only-section').classList.remove('hidden');
-                    }
+                    if(currentUserRank >= 2 || user.email === OWNER_EMAIL) document.getElementById('admin-only-section').classList.remove('hidden');
                 }
-
                 document.getElementById('welcome-text').innerText = "Hello, " + data.username;
                 document.getElementById('user-display').innerText = data.username;
             });
@@ -189,98 +184,75 @@
             document.getElementById('auth-view').classList.add('hidden');
             document.getElementById('logged-in-view').classList.remove('hidden');
 
-            // THREAD RENDERING
+            // CHAT/FORUM RENDER
             onValue(ref(db, 'threads'), async (s) => {
                 const display = document.getElementById('thread-display');
                 display.innerHTML = "";
                 const usersSnap = await get(child(ref(db), 'users'));
                 const allUsers = usersSnap.val() || {};
-                
                 s.forEach(c => {
-                    const postId = c.key;
-                    const p = c.val();
-                    const author = allUsers[p.uid] || {};
+                    const postId = c.key; const p = c.val(); const author = allUsers[p.uid] || {};
+                    const canDelete = (currentUserRank >= 1) || (p.uid === auth.currentUser.uid);
                     const div = document.createElement('div');
                     div.className = 'thread-row';
-                    
-                    // Show Delete button if: User is Staff OR User is Author (and author isn't CEO)
-                    const canDelete = (currentUserRank >= 1) || (p.uid === auth.currentUser.uid);
-                    const isProtected = (p.uid === CEO_UID && auth.currentUser.uid !== CEO_UID);
-                    
-                    const deleteBtnHtml = (canDelete && !isProtected) ? `<button class="delete-btn" onclick="deletePost('${postId}')">Delete</button>` : "";
-
-                    div.innerHTML = `
-                        ${createAvatarHTML(author.colors || {h:'#f5cd30', t:'#0d5f97', l:'#a06110'}, p.uid === CEO_UID)} 
+                    div.innerHTML = `${createAvatarHTML(author.colors, p.uid === CEO_UID, author.hat)}
                         <div style="margin-left:20px;">
-                            <strong style="color:#0055ff; cursor:pointer;" onclick="loadProfile('${p.uid}')">${author.banned ? '[ Content Deleted ]' : author.username}</strong><br>
-                            ${author.banned ? '<i>[Post Removed]</i>' : p.message}
+                            <strong style="color:#0055ff; cursor:pointer;" onclick="loadProfile('${p.uid}')">${author.username}</strong><br>${p.message}
                         </div>
-                        ${deleteBtnHtml}`;
+                        ${canDelete ? `<button class="delete-btn" onclick="deletePost('${postId}')">Delete</button>` : ""}`;
                     display.prepend(div);
                 });
-            });
-
-            onValue(ref(db, 'announcement/text'), (s) => {
-                const banner = document.getElementById('announcement-container');
-                if(s.exists() && s.val() !== "") {
-                    document.getElementById('announcement-display').innerText = s.val();
-                    banner.style.display = 'block';
-                } else banner.style.display = 'none';
             });
         } else { showView('auth-view'); }
     });
 
-    // GLOBAL DELETE FUNCTION
-    window.deletePost = (id) => {
-        if(confirm("Are you sure you want to remove this message?")) {
-            remove(ref(db, `threads/${id}`)).then(() => alert("Message Deleted."));
-        }
+    // STAFF FUNCTIONS
+    document.getElementById('postAnnounce').onclick = () => set(ref(db, 'announcement/text'), document.getElementById('announce-text').value);
+    document.getElementById('applyBan').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value}`), { banned: true });
+    document.getElementById('applyUnban').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value}`), { banned: false });
+    document.getElementById('applyRank').onclick = () => update(ref(db, `users/${document.getElementById('rank-uid').value}`), { rank: parseInt(document.getElementById('rank-select').value) });
+
+    // PROFILE & CHAT
+    window.loadProfile = async (uid) => {
+        showView('profile-view');
+        const snap = await get(child(ref(db), `users/${uid}`));
+        const d = snap.val();
+        document.getElementById('view-username').innerText = d.username;
+        document.getElementById('view-id').innerText = "ID: " + uid;
+        document.getElementById('view-bio').innerText = d.bio || "Legacy Member";
+        document.getElementById('profile-render').innerHTML = createAvatarHTML(d.colors, uid === CEO_UID, d.hat);
+        if(uid === auth.currentUser.uid) {
+            document.getElementById('customizer-box').classList.remove('hidden');
+            document.getElementById('edit-bio').value = d.bio || "";
+        } else document.getElementById('customizer-box').classList.add('hidden');
     };
 
-    document.getElementById('applyBan').onclick = () => {
-        const uid = document.getElementById('target-uid').value.trim();
-        const reason = filterText(document.getElementById('ban-reason-input').value.trim());
-        const days = document.getElementById('ban-duration').value;
-        if(uid === CEO_UID) return alert("Error: Target is immune to moderation.");
-        let expiry = "perm";
-        if(days !== "perm") expiry = Date.now() + (parseInt(days) * 86400000);
-        update(ref(db, `users/${uid}`), { banned: true, banExpires: expiry, banReason: reason || "Violation of rules" }).then(()=>alert("User Banned."));
-    };
-
-    document.getElementById('applyRank').onclick = () => {
-        const uid = document.getElementById('rank-uid').value.trim();
-        const newRank = parseInt(document.getElementById('rank-select').value);
-        if(uid === CEO_UID) return alert("Error: Target rank is locked.");
-        update(ref(db, `users/${uid}`), { rank: newRank }).then(()=>alert("Rank updated."));
-    };
-
-    document.getElementById('signupBtn').onclick = () => {
-        const user = document.getElementById('reg-user').value.trim();
-        if(filterText(user).includes("####")) return alert("Username contains blocked words!");
-        createUserWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-pass').value).then((res) => {
-            set(ref(db, `users/${res.user.uid}`), { username: user, rank: 0, banned: false, colors: {h:'#f5cd30', t:'#0d5f97', l:'#a06110'} });
-        });
-    };
-
-    document.getElementById('postAnnounce').onclick = () => {
-        const cleanBanner = filterText(document.getElementById('announce-text').value);
-        set(ref(db, 'announcement/text'), cleanBanner);
+    document.getElementById('saveProfile').onclick = () => {
+        update(ref(db, `users/${auth.currentUser.uid}`), {
+            bio: document.getElementById('edit-bio').value,
+            hat: document.getElementById('hat-select').value,
+            colors: { h: document.getElementById('color-h').value, t: document.getElementById('color-t').value, l: document.getElementById('color-l').value }
+        }).then(() => alert("Saved!"));
     };
 
     document.getElementById('submitPost').onclick = () => {
-        const cleanMsg = filterText(document.getElementById('post-input').value);
-        if(!cleanMsg) return;
-        push(ref(db, 'threads'), { message: cleanMsg, uid: auth.currentUser.uid });
+        const msg = document.getElementById('post-input').value;
+        if(msg.trim()) push(ref(db, 'threads'), { message: msg, uid: auth.currentUser.uid });
         document.getElementById('post-input').value = "";
     };
 
-    document.getElementById('applyUnban').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value.trim()}`), { banned: false });
+    window.deletePost = (id) => remove(ref(db, `threads/${id}`));
+    window.showView = (id) => { document.getElementById('forum-home').classList.add('hidden'); document.getElementById('profile-view').classList.add('hidden'); document.getElementById(id).classList.remove('hidden'); };
     document.getElementById('loginBtn').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-pass').value);
     document.getElementById('logoutBtn').onclick = () => signOut(auth).then(() => location.reload());
-    document.getElementById('adminBtn').onclick = () => document.getElementById('admin-panel').classList.toggle('hidden');
     document.getElementById('myProfileBtn').onclick = () => loadProfile(auth.currentUser.uid);
-    window.showView = (id) => { document.getElementById('forum-home').classList.add('hidden'); document.getElementById('profile-view').classList.add('hidden'); document.getElementById(id).classList.remove('hidden'); };
-    window.loadProfile = async (uid) => { showView('profile-view'); const snap = await get(child(ref(db), `users/${uid}`)); const d = snap.val(); document.getElementById('view-username').innerText = d.username; document.getElementById('profile-render').innerHTML = createAvatarHTML(d.colors || {h:'#f5cd30', t:'#0d5f97', l:'#a06110'}, uid === CEO_UID); };
+    document.getElementById('adminBtn').onclick = () => document.getElementById('admin-panel').classList.toggle('hidden');
+    document.getElementById('signupBtn').onclick = () => {
+        const user = document.getElementById('reg-user').value;
+        createUserWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-pass').value).then((res) => {
+            set(ref(db, `users/${res.user.uid}`), { username: user, rank: 0, banned: false, colors: {h:'#f5cd30', t:'#0d5f97', l:'#a06110'}, hat: 'none', bio: 'New Member' });
+        });
+    };
 </script>
 </body>
 </html>
