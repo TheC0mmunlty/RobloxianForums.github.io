@@ -15,7 +15,7 @@
         .btn-danger { background: #ff4444; color: white; border: 1px solid #aa0000; }
         .btn-admin { background: #ffff00; color: #000; border: 1px solid #777; }
         
-        /* AVATAR & HAT STYLES */
+        /* AVATAR RENDERING */
         .avatar-frame { width: 80px; height: 110px; position: relative; background: #e1e1e1; border: 1px solid #999; display: flex; flex-direction: column; align-items: center; transform: scale(0.8); margin-top: 15px; }
         .char-head { width: 20px; height: 20px; border: 1px solid rgba(0,0,0,0.2); z-index: 5; position: relative; }
         .char-torso { width: 40px; height: 40px; border: 1px solid rgba(0,0,0,0.2); position: relative; }
@@ -72,14 +72,14 @@
         </div>
 
         <div id="admin-panel" class="hidden">
-            <h3 id="panel-title">Staff Dashboard</h3>
+            <h3>Staff Dashboard</h3>
             <div id="admin-only-section" class="hidden">
                 <strong>Global Banner:</strong> 
                 <input type="text" id="announce-text" placeholder="Global message..." style="width:50%;">
                 <button class="btn btn-submit" id="postAnnounce">Save Banner</button>
                 <hr>
-                <strong>Rank/Unrank User:</strong><br>
-                UID: <input type="text" id="rank-uid" placeholder="User UID...">
+                <strong>Rank User:</strong><br>
+                UID: <input type="text" id="rank-uid">
                 Rank: <select id="rank-select" class="btn">
                     <option value="0">Player</option>
                     <option value="1">Moderator</option>
@@ -88,15 +88,10 @@
                 <button class="btn btn-submit" id="applyRank">Update Rank</button>
                 <hr>
             </div>
-            <strong>Ban Hammer:</strong><br>
-            Target UID: <input type="text" id="target-uid" placeholder="Paste UID here...">
-            Reason: <input type="text" id="ban-reason-input" placeholder="Reason...">
-            Length: <select id="ban-duration" class="btn">
-                <option value="perm">Permanent</option>
-                <option value="1">1 Day</option>
-            </select>
-            <button class="btn btn-danger" id="applyBan">Apply Ban</button>
-            <button class="btn" id="applyUnban">Unban User</button>
+            <strong>Moderation:</strong><br>
+            Target UID: <input type="text" id="target-uid">
+            <button class="btn btn-danger" id="applyBan">Ban</button>
+            <button class="btn" id="applyUnban">Unban</button>
         </div>
 
         <div id="forum-home">
@@ -112,13 +107,15 @@
                     <h2 id="view-username" style="margin:0;">User</h2>
                     <div id="view-id" class="user-id-tag">ID: 0</div>
                     <div id="ceo-tag" class="hidden ceo-badge">CEO</div>
-                    <p id="view-bio" style="font-style: italic; color: #444; border-left: 3px solid #ccc; padding-left: 10px;">Legacy Member</p>
+                    <p id="view-bio" style="border-left: 3px solid #0055ff; padding-left: 10px; background: #f9f9f9; padding: 10px;">Legacy Member</p>
                     
                     <div id="customizer-box" class="hidden" style="margin-top:20px; padding-top:10px; border-top: 1px dashed #ccc;">
                         <strong>Character Customizer</strong><br>
                         <div style="margin: 10px 0;">
-                            Bio: <input type="text" id="edit-bio" style="width:70%;" placeholder="Bio..."><br>
-                            Head: <input type="color" id="color-h"> Torso: <input type="color" id="color-t"> Legs: <input type="color" id="color-l">
+                            Bio: <input type="text" id="edit-bio" style="width:70%;" placeholder="Edit your bio..."><br>
+                            Skin (Head/Arms): <input type="color" id="color-h"> 
+                            Torso: <input type="color" id="color-t"> 
+                            Legs: <input type="color" id="color-l">
                         </div>
                         <div>
                             Hat: <select id="hat-select">
@@ -126,7 +123,7 @@
                                 <option value="tophat">Top Hat</option>
                             </select>
                         </div>
-                        <button class="btn btn-submit" id="saveProfile" style="margin-top:10px;">Update Profile</button>
+                        <button class="btn btn-submit" id="saveProfile" style="margin-top:10px;">Save Character</button>
                     </div>
                 </div>
             </div>
@@ -184,7 +181,6 @@
             document.getElementById('auth-view').classList.add('hidden');
             document.getElementById('logged-in-view').classList.remove('hidden');
 
-            // CHAT/FORUM RENDER
             onValue(ref(db, 'threads'), async (s) => {
                 const display = document.getElementById('thread-display');
                 display.innerHTML = "";
@@ -206,33 +202,38 @@
         } else { showView('auth-view'); }
     });
 
-    // STAFF FUNCTIONS
+    // STAFF TOOLS LOGIC (PRESERVED)
     document.getElementById('postAnnounce').onclick = () => set(ref(db, 'announcement/text'), document.getElementById('announce-text').value);
     document.getElementById('applyBan').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value}`), { banned: true });
     document.getElementById('applyUnban').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value}`), { banned: false });
     document.getElementById('applyRank').onclick = () => update(ref(db, `users/${document.getElementById('rank-uid').value}`), { rank: parseInt(document.getElementById('rank-select').value) });
 
-    // PROFILE & CHAT
+    // PROFILE LOADING
     window.loadProfile = async (uid) => {
         showView('profile-view');
         const snap = await get(child(ref(db), `users/${uid}`));
         const d = snap.val();
         document.getElementById('view-username').innerText = d.username;
-        document.getElementById('view-id').innerText = "ID: " + uid;
+        document.getElementById('view-id').innerText = "UID: " + uid;
         document.getElementById('view-bio').innerText = d.bio || "Legacy Member";
         document.getElementById('profile-render').innerHTML = createAvatarHTML(d.colors, uid === CEO_UID, d.hat);
         if(uid === auth.currentUser.uid) {
             document.getElementById('customizer-box').classList.remove('hidden');
             document.getElementById('edit-bio').value = d.bio || "";
+            document.getElementById('color-h').value = d.colors?.h || "#f5cd30";
+            document.getElementById('color-t').value = d.colors?.t || "#0d5f97";
+            document.getElementById('color-l').value = d.colors?.l || "#a06110";
+            document.getElementById('hat-select').value = d.hat || "none";
         } else document.getElementById('customizer-box').classList.add('hidden');
     };
 
+    // SAVE CHARACTER LOGIC
     document.getElementById('saveProfile').onclick = () => {
         update(ref(db, `users/${auth.currentUser.uid}`), {
             bio: document.getElementById('edit-bio').value,
             hat: document.getElementById('hat-select').value,
             colors: { h: document.getElementById('color-h').value, t: document.getElementById('color-t').value, l: document.getElementById('color-l').value }
-        }).then(() => alert("Saved!"));
+        }).then(() => alert("Character Saved!"));
     };
 
     document.getElementById('submitPost').onclick = () => {
