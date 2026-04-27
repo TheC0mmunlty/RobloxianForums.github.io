@@ -9,7 +9,6 @@
         header { background: #0055ff; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #0033aa; }
         .header-meta { font-size: 11px; font-weight: bold; color: #ffd700; text-transform: uppercase; letter-spacing: 1px; }
         
-        /* CEO ANIMATION */
         @keyframes ceo-glow { 0% { text-shadow: 0 0 5px gold; color: gold; } 50% { text-shadow: 0 0 20px gold, 0 0 30px red; color: #ff4444; } 100% { text-shadow: 0 0 5px gold; color: gold; } }
         .ceo-text { animation: ceo-glow 1.5s infinite; font-weight: 900 !important; }
 
@@ -32,7 +31,6 @@
         .badge-staff { background: #0055ff; color: white; }
         .badge-vet { background: #00aa00; color: white; }
 
-        /* AVATAR RENDERING */
         .avatar-frame { width: 80px; height: 110px; position: relative; background: #e1e1e1; border: 1px solid #999; display: flex; flex-direction: column; align-items: center; transform: scale(1.1); margin-top: 25px; }
         .char-head { width: 22px; height: 22px; border: 1px solid rgba(0,0,0,0.2); z-index: 5; position: relative; margin-top: 10px; }
         .char-torso { width: 44px; height: 44px; border: 1px solid rgba(0,0,0,0.2); position: relative; }
@@ -40,12 +38,12 @@
         .arm-l { left: -17px; } .arm-r { right: -17px; }
         .char-leg { width: 20px; height: 44px; border: 1px solid rgba(0,0,0,0.2); display: inline-block; }
         
-        .hat-domino { width: 28px; height: 8px; background: linear-gradient(to bottom, #333, #000); position: absolute; top: -7px; left: -4px; border: 1px solid #fff; z-index: 10; }
-        .hat-domino::before { content: ''; width: 5px; height: 9px; background: #000; border: 1px solid #fff; position: absolute; top: -7px; left: 3px; box-shadow: 8px 0 0 -1px #000, 8px 0 0 0 #fff, 16px 0 0 -1px #000, 16px 0 0 0 #fff; }
-        .hat-tophat { width: 34px; height: 5px; background: #111; position: absolute; top: -4px; left: -7px; z-index: 10; border-radius: 1px; }
+        .hat-domino { width: 28px; height: 8px; background: #000; position: absolute; top: -7px; left: -4px; border: 1px solid #fff; z-index: 10; }
+        .hat-tophat { width: 34px; height: 5px; background: #111; position: absolute; top: -4px; left: -7px; z-index: 10; }
         .hat-tophat::after { content: ''; width: 18px; height: 22px; background: #111; position: absolute; top: -22px; left: 8px; border: 1px solid #222; }
 
-        .thread-row { border-bottom: 1px solid #ddd; padding: 12px; background: #fff; display: flex; align-items: center; position: relative; }
+        .thread-row { border-bottom: 1px solid #ddd; padding: 12px; background: #fff; display: flex; align-items: center; }
+        .log-box { height: 100px; overflow-y: auto; background: #eee; border: 1px solid #999; font-size: 10px; padding: 5px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -60,7 +58,7 @@
 
 <div class="main-wrapper">
     <div id="auth-view" style="text-align:center; padding:40px;">
-        <h2>Login to Legacy</h2>
+        <h2>Login / Sign Up</h2>
         <input type="text" id="reg-user" placeholder="Username" style="display:block; margin:10px auto; padding:8px;">
         <input type="email" id="auth-email" placeholder="Email" style="display:block; margin:10px auto; padding:8px;">
         <input type="password" id="auth-pass" placeholder="Password" style="display:block; margin:10px auto; padding:8px;">
@@ -74,7 +72,7 @@
             <div>
                 <button class="btn" onclick="showView('forum-home')">Forum</button>
                 <button class="btn" id="myProfileBtn">My Profile</button>
-                <button class="btn btn-admin hidden" id="adminBtn" onclick="showView('admin-view')">ADMIN</button>
+                <button class="btn btn-admin hidden" id="adminBtn" onclick="showView('admin-view')">ADMIN PANEL</button>
                 <button class="btn btn-danger" id="logoutBtn">Logout</button>
             </div>
         </div>
@@ -83,15 +81,10 @@
             <div class="tabs">
                 <div class="tab active" data-cat="General">General</div>
                 <div class="tab" data-cat="Help">Help</div>
-                <div class="tab" data-cat="Feedback">Feedback</div>
             </div>
-            <textarea id="post-input" placeholder="Type here..." style="width:100%; height: 50px;"></textarea>
+            <textarea id="post-input" placeholder="What's on your mind?" style="width:100%; height: 50px;"></textarea>
             <div style="display:flex; justify-content:space-between; margin-top:5px;">
-                <select id="category-select">
-                    <option value="General">Post to General</option>
-                    <option value="Help">Post to Help</option>
-                    <option value="Feedback">Post to Feedback</option>
-                </select>
+                <select id="category-select"><option value="General">General</option><option value="Help">Help</option></select>
                 <button class="btn btn-submit" id="submitPost">Submit Post</button>
             </div>
             <div id="thread-display" style="margin-top: 20px;"></div>
@@ -105,25 +98,33 @@
                     <div id="badge-display" class="badge-container"></div>
                     <p id="view-bio" style="background:#f0f0f0; padding:10px; border:1px solid #ddd; margin-top:10px;">...</p>
                     <div id="customizer-box" class="hidden">
-                         <strong>Settings</strong><br>
-                         Bio: <input type="text" id="edit-bio" style="width:90%;"><br>
-                         Hat: <select id="hat-select"><option value="none">None</option><option value="domino">Domino Crown</option><option value="tophat">Top Hat</option></select><br>
+                         <hr>
+                         Bio: <input type="text" id="edit-bio" style="width:80%;"><br>
+                         Hat: <select id="hat-select"><option value="none">None</option><option value="domino">Domino</option><option value="tophat">Top Hat</option></select><br>
                          Colors: <input type="color" id="color-h"> <input type="color" id="color-t"> <input type="color" id="color-l">
-                         <button class="btn btn-submit" id="saveProfile" style="width:100%; margin-top:10px;">Update Data</button>
+                         <button class="btn btn-submit" id="saveProfile" style="width:100%; margin-top:10px;">Save Changes</button>
                     </div>
                 </div>
             </div>
         </div>
 
         <div id="admin-view" class="hidden">
-             </div>
+            <div style="background:white; padding:15px; border:2px solid #aa0000;">
+                <h3>Staff Control Console</h3>
+                <input type="text" id="target-uid" placeholder="Target User UID" style="width:60%;">
+                <button class="btn btn-danger" onclick="setRank(3)">Make CEO</button>
+                <button class="btn btn-submit" onclick="setRank(1)">Make Staff</button>
+                <button class="btn" onclick="setRank(0)">Reset Rank</button>
+                <div id="staff-logs" class="log-box"></div>
+            </div>
+        </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, set, push, onValue, get, child, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, push, onValue, get, child, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyANfmR8j_Z7mHmSO1GNXGnIGKTdBiU6uiU",
@@ -139,14 +140,11 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
     let currentUserData = null;
-    let selectedCategory = 'General';
 
     function createAvatarHTML(colors, hat) {
-        let hatHtml = '';
-        if (hat === 'domino') hatHtml = `<div class="hat-domino"></div>`;
-        else if (hat === 'tophat') hatHtml = `<div class="hat-tophat"></div>`;
+        let h = hat === 'domino' ? '<div class="hat-domino"></div>' : (hat === 'tophat' ? '<div class="hat-tophat"></div>' : '');
         const c = colors || {h:'#f5cd30', t:'#0d5f97', l:'#a06110'};
-        return `<div class="avatar-frame"><div class="char-head" style="background:${c.h}">${hatHtml}</div><div class="char-torso" style="background:${c.t}"><div class="char-arm arm-l" style="background:${c.h}"></div><div class="char-arm arm-r" style="background:${c.h}"></div></div><div style="display:flex;"><div class="char-leg" style="background:${c.l}"></div><div class="char-leg" style="background:${c.l}"></div></div></div>`;
+        return `<div class="avatar-frame"><div class="char-head" style="background:${c.h}">${h}</div><div class="char-torso" style="background:${c.t}"><div class="char-arm arm-l" style="background:${c.h}"></div><div class="char-arm arm-r" style="background:${c.h}"></div></div><div style="display:flex;"><div class="char-leg" style="background:${c.l}"></div><div class="char-leg" style="background:${c.l}"></div></div></div>`;
     }
 
     onAuthStateChanged(auth, (user) => {
@@ -154,16 +152,13 @@
             onValue(ref(db, `users/${user.uid}`), (snap) => {
                 currentUserData = snap.val();
                 if(!currentUserData) return;
-
-                // PERSISTENT LEVEL LOGIC
                 const level = Math.floor((currentUserData.postCount || 0) / 5) + 1;
                 document.getElementById('level-display').innerText = level;
                 document.getElementById('user-display').innerText = "Hello, " + currentUserData.username;
-
-                const r = currentUserData.rank;
                 const ind = document.getElementById('rank-indicator');
-                if(r === 3) { ind.innerText = "CHIEF EXECUTIVE OFFICER"; ind.classList.add('ceo-text'); document.getElementById('adminBtn').classList.remove('hidden'); }
-                else if(r >= 1) { ind.innerText = "STAFF"; ind.style.color = "red"; document.getElementById('adminBtn').classList.remove('hidden'); }
+                ind.className = "header-meta";
+                if(currentUserData.rank === 3) { ind.innerText = "CEO"; ind.classList.add('ceo-text'); document.getElementById('adminBtn').classList.remove('hidden'); }
+                else if(currentUserData.rank >= 1) { ind.innerText = "STAFF"; ind.style.color = "red"; document.getElementById('adminBtn').classList.remove('hidden'); }
                 else { ind.innerText = "MEMBER"; ind.style.color = "gold"; }
             });
             renderForum();
@@ -174,58 +169,49 @@
 
     document.getElementById('submitPost').onclick = async () => {
         const msg = document.getElementById('post-input').value;
-        const cat = document.getElementById('category-select').value;
         if(!msg.trim()) return;
-
-        // Save Data: Increase post count in DB
         const newCount = (currentUserData.postCount || 0) + 1;
         update(ref(db, `users/${auth.currentUser.uid}`), { postCount: newCount });
-
-        push(ref(db, 'threads'), { message: msg, category: cat, uid: auth.currentUser.uid, timestamp: Date.now() });
+        push(ref(db, 'threads'), { message: msg, category: document.getElementById('category-select').value, uid: auth.currentUser.uid });
         document.getElementById('post-input').value = "";
     };
 
     window.loadProfile = async (uid) => {
         showView('profile-view');
-        const snap = await get(child(ref(db), `users/${uid}`));
-        const d = snap.val();
+        const d = (await get(child(ref(db), `users/${uid}`))).val();
         document.getElementById('view-username').innerText = d.username;
         document.getElementById('view-bio').innerText = d.bio || "No bio.";
         document.getElementById('profile-render').innerHTML = createAvatarHTML(d.colors, d.hat);
-        
-        // RECODE BADGES
-        const bDisplay = document.getElementById('badge-display');
-        bDisplay.innerHTML = "";
-        if(d.rank === 3) bDisplay.innerHTML += `<span class="badge badge-ceo">CEO</span>`;
-        if(d.rank >= 1 && d.rank < 3) bDisplay.innerHTML += `<span class="badge badge-staff">Staff</span>`;
-        if((d.postCount || 0) >= 10) bDisplay.innerHTML += `<span class="badge badge-vet">Veteran</span>`;
-
+        const b = document.getElementById('badge-display'); b.innerHTML = "";
+        if(d.rank === 3) b.innerHTML += `<span class="badge badge-ceo">CEO</span>`;
+        if(d.rank >= 1 && d.rank < 3) b.innerHTML += `<span class="badge badge-staff">Staff</span>`;
+        if((d.postCount || 0) >= 10) b.innerHTML += `<span class="badge badge-vet">Veteran</span>`;
         document.getElementById('customizer-box').classList.toggle('hidden', uid !== auth.currentUser.uid);
+    };
+
+    window.setRank = (r) => {
+        const uid = document.getElementById('target-uid').value;
+        if(!uid) return alert("Enter UID");
+        update(ref(db, `users/${uid}`), { rank: r });
+        push(ref(db, 'staff_logs'), { msg: `Rank ${r} set for ${uid}`, time: Date.now() });
     };
 
     const renderForum = () => {
         onValue(ref(db, 'threads'), async (s) => {
             const display = document.getElementById('thread-display'); display.innerHTML = "";
-            const usersSnap = await get(child(ref(db), 'users'));
-            const allUsers = usersSnap.val() || {};
+            const users = (await get(child(ref(db), 'users'))).val() || {};
             s.forEach(c => {
                 const p = c.val();
-                if (p.category === selectedCategory) {
-                    const author = allUsers[p.uid] || {username: "Unknown"};
-                    const div = document.createElement('div'); div.className = 'thread-row';
-                    div.innerHTML = `<div style="transform:scale(0.5); width:50px;">${createAvatarHTML(author.colors, author.hat)}</div>
-                        <div style="margin-left:20px;">
-                            <strong style="color:#0055ff; cursor:pointer;" onclick="window.loadProfile('${p.uid}')">${author.username}</strong>
-                            <div style="margin-top:5px; font-size:13px;">${p.message}</div>
-                        </div>`;
-                    display.prepend(div);
-                }
+                const author = users[p.uid] || {username: "Unknown"};
+                const div = document.createElement('div'); div.className = 'thread-row';
+                div.innerHTML = `<div style="transform:scale(0.4); width:40px;">${createAvatarHTML(author.colors, author.hat)}</div><div style="margin-left:20px;"><strong onclick="window.loadProfile('${p.uid}')" style="color:#0055ff; cursor:pointer;">${author.username}</strong><br>${p.message}</div>`;
+                display.prepend(div);
             });
         });
     };
 
     window.showView = (id) => {
-        ['forum-home', 'profile-view'].forEach(v => document.getElementById(v).classList.add('hidden'));
+        ['forum-home', 'profile-view', 'admin-view'].forEach(v => document.getElementById(v).classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
     };
 
@@ -233,15 +219,12 @@
     document.getElementById('signupBtn').onclick = () => {
         const u = document.getElementById('reg-user').value;
         createUserWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-pass').value).then((r) => {
-            set(ref(db, `users/${r.user.uid}`), { username: u, postCount: 0, bio: 'New Member', rank: 0, colors: {h:'#f5cd30', t:'#0d5f97', l:'#a06110'}, hat: 'none' });
+            set(ref(db, `users/${r.user.uid}`), { username: u, postCount: 0, rank: 0 });
         });
     };
     document.getElementById('saveProfile').onclick = () => {
-        update(ref(db, `users/${auth.currentUser.uid}`), {
-            bio: document.getElementById('edit-bio').value,
-            hat: document.getElementById('hat-select').value,
-            colors: { h: document.getElementById('color-h').value, t: document.getElementById('color-t').value, l: document.getElementById('color-l').value }
-        }).then(() => alert("Profile Saved!"));
+        update(ref(db, `users/${auth.currentUser.uid}`), { bio: document.getElementById('edit-bio').value, hat: document.getElementById('hat-select').value, colors: { h: document.getElementById('color-h').value, t: document.getElementById('color-t').value, l: document.getElementById('color-l').value } });
+        alert("Saved!");
     };
     document.getElementById('logoutBtn').onclick = () => signOut(auth).then(()=>location.reload());
     document.getElementById('myProfileBtn').onclick = () => window.loadProfile(auth.currentUser.uid);
