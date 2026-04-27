@@ -8,7 +8,6 @@
         body { font-family: "MS Sans Serif", Geneva, sans-serif; margin: 0; background: #ccc url('https://wallpapercave.com/wp/wp9084955.jpg') fixed center; background-size: cover; }
         header { background: #0055ff; color: white; padding: 8px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #0033aa; }
         
-        /* GLOBAL BANNER SYSTEM */
         #announcement-container { background: #ff9800; border-bottom: 2px solid #cc7a00; color: #fff; padding: 12px; font-weight: bold; text-align: center; display: none; font-size: 14px; position: relative; z-index: 100; }
         
         .main-wrapper { width: 950px; margin: 20px auto; background: rgba(238, 238, 238, 0.95); border: 1px solid #888; min-height: 600px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.4); }
@@ -27,17 +26,9 @@
         .arm-r { right: -16px; transform: rotate(-5deg); }
         .char-leg { width: 18px; height: 40px; border: 1px solid rgba(0,0,0,0.2); display: inline-block; }
         
-        /* CSS BUILT DOMINO CROWN */
-        .hat-domino-css { 
-            width: 24px; height: 6px; background: #333; 
-            position: absolute; top: -6px; left: -2px; border: 1px solid #000; z-index: 10;
-        }
-        /* The "bricks/dominoes" on top */
-        .hat-domino-css::before {
-            content: ''; position: absolute; top: -10px; left: 0;
-            width: 6px; height: 10px; background: #eee; border: 1px solid #000;
-            box-shadow: 8px 0 0 #eee, 8px 0 0 0 #000, 16px 0 0 #eee, 16px 0 0 0 #000;
-        }
+        /* CSS DOMINO CROWN */
+        .hat-domino-css { width: 24px; height: 6px; background: #333; position: absolute; top: -6px; left: -2px; border: 1px solid #000; z-index: 10; }
+        .hat-domino-css::before { content: ''; position: absolute; top: -10px; left: 0; width: 6px; height: 10px; background: #eee; border: 1px solid #000; box-shadow: 8px 0 0 #eee, 8px 0 0 0 #000, 16px 0 0 #eee, 16px 0 0 0 #000; }
 
         .hat-top-hat { width: 24px; height: 15px; background: #222; position: absolute; top: -14px; left: -2px; border: 1px solid #000; z-index: 10; }
         .hat-top-hat::after { content: ''; width: 34px; height: 3px; background: #222; position: absolute; bottom: -1px; left: -5px; border: 1px solid #000; }
@@ -147,14 +138,13 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
     const OWNER_EMAIL = "fahid.001x@gmail.com";
-    const CEO_UID = "oJm6Z87yVpMe5YgO7G4H0vU7T9m2";
+    const CREATOR_UID = "oJm6Z87yVpMe5YgO7G4H0vU7T9m2"; // IMMUNE TO ALL
     let currentUserRank = 0;
 
     function createAvatarHTML(colors, isCEO, hat) {
         let hatHtml = '';
         if(hat === 'tophat') hatHtml = `<div class="hat-top-hat"></div>`;
         if(hat === 'domino') hatHtml = `<div class="hat-domino-css"></div>`;
-        
         const c = colors || {h:'#f5cd30', t:'#0d5f97', l:'#a06110'};
         return `<div class="avatar-frame ${isCEO ? 'ceo-glow' : ''}">
             <div class="char-head" style="background:${c.h}">${hatHtml}</div>
@@ -178,7 +168,6 @@
                 document.getElementById('user-display').innerText = data.username;
             });
 
-            // BANNER LISTENER
             onValue(ref(db, 'announcement/text'), (s) => {
                 const banner = document.getElementById('announcement-container');
                 if(s.exists() && s.val() !== "") {
@@ -199,7 +188,7 @@
                     const postId = c.key; const p = c.val(); const author = allUsers[p.uid] || {};
                     const div = document.createElement('div');
                     div.className = 'thread-row';
-                    div.innerHTML = `${createAvatarHTML(author.colors, p.uid === CEO_UID, author.hat)}
+                    div.innerHTML = `${createAvatarHTML(author.colors, p.uid === CREATOR_UID, author.hat)}
                         <div style="margin-left:20px;">
                             <strong style="color:#0055ff; cursor:pointer;" onclick="loadProfile('${p.uid}')">${author.username}</strong><br>${p.message}
                         </div>
@@ -210,11 +199,32 @@
         }
     });
 
-    // STAFF FUNCTIONS
+    // STAFF PROTECTION LOGIC
+    async function getTargetRank(uid) {
+        const snap = await get(child(ref(db), `users/${uid}`));
+        return snap.val()?.rank || 0;
+    }
+
     document.getElementById('postAnnounce').onclick = () => set(ref(db, 'announcement/text'), document.getElementById('announce-text').value);
-    document.getElementById('applyBan').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value}`), { banned: true });
+
+    document.getElementById('applyBan').onclick = async () => {
+        const target = document.getElementById('target-uid').value;
+        const targetRank = await getTargetRank(target);
+        if(target === CREATOR_UID) return alert("Immunity: Cannot ban Creator.");
+        if(currentUserRank <= targetRank && auth.currentUser.email !== OWNER_EMAIL) return alert("Error: Target has equal or higher rank.");
+        update(ref(db, `users/${target}`), { banned: true });
+    };
+
     document.getElementById('applyUnban').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value}`), { banned: false });
-    document.getElementById('applyRank').onclick = () => update(ref(db, `users/${document.getElementById('rank-uid').value}`), { rank: parseInt(document.getElementById('rank-select').value) });
+
+    document.getElementById('applyRank').onclick = async () => {
+        const target = document.getElementById('rank-uid').value;
+        const targetRank = await getTargetRank(target);
+        const newRank = parseInt(document.getElementById('rank-select').value);
+        if(target === CREATOR_UID) return alert("Immunity: Cannot change Creator rank.");
+        if(currentUserRank <= targetRank && auth.currentUser.email !== OWNER_EMAIL) return alert("Error: Target has equal or higher rank.");
+        update(ref(db, `users/${target}`), { rank: newRank });
+    };
 
     window.loadProfile = async (uid) => {
         showView('profile-view');
@@ -223,7 +233,7 @@
         document.getElementById('view-username').innerText = d.username;
         document.getElementById('view-id').innerText = "UID: " + uid;
         document.getElementById('view-bio').innerText = d.bio || "Legacy Member";
-        document.getElementById('profile-render').innerHTML = createAvatarHTML(d.colors, uid === CEO_UID, d.hat);
+        document.getElementById('profile-render').innerHTML = createAvatarHTML(d.colors, uid === CREATOR_UID, d.hat);
         if(uid === auth.currentUser.uid) {
             document.getElementById('customizer-box').classList.remove('hidden');
             document.getElementById('edit-bio').value = d.bio || "";
