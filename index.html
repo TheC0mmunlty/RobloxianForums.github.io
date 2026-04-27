@@ -6,15 +6,17 @@
     <title>The Robloxians - 2012 Legacy</title>
     <style>
         body { font-family: "MS Sans Serif", Geneva, sans-serif; margin: 0; background: #ccc url('https://wallpapercave.com/wp/wp9084955.jpg') fixed center; background-size: cover; }
-        header { background: #0055ff; color: white; padding: 8px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #0033aa; }
-        .user-info-bar { font-size: 11px; color: #eee; margin-top: 4px; }
-        #announcement-container { background: #ff9800; border-bottom: 2px solid #cc7a00; color: #fff; padding: 12px; font-weight: bold; text-align: center; display: none; font-size: 14px; position: relative; z-index: 100; }
+        header { background: #0055ff; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #0033aa; }
+        .header-meta { font-size: 11px; font-weight: bold; color: #ffd700; text-transform: uppercase; letter-spacing: 1px; }
         .main-wrapper { width: 950px; margin: 20px auto; background: rgba(238, 238, 238, 0.95); border: 1px solid #888; min-height: 600px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.4); }
         .hidden { display: none !important; }
         .btn { background: #e1e1e1; border: 1px solid #777; padding: 5px 15px; cursor: pointer; font-size: 12px; font-weight: bold; margin: 2px; }
         .btn-submit { background: #ffcc00; border-color: #ccaa00; }
         .btn-danger { background: #ff4444; color: white; border: 1px solid #aa0000; }
-        .btn-admin { background: #ffff00; color: #000; border: 1px solid #777; }
+        .btn-admin { background: #ffff00; color: #000; border: 2px solid #000; }
+        
+        /* ADMIN PANEL */
+        #admin-panel { border: 4px solid #ffcc00; padding: 15px; background: #fff; margin-bottom: 15px; box-shadow: 4px 4px 0px #000; }
         
         /* AVATAR SYSTEM */
         .avatar-frame { width: 80px; height: 110px; position: relative; background: #e1e1e1; border: 1px solid #999; display: flex; flex-direction: column; align-items: center; transform: scale(0.8); margin-top: 25px; }
@@ -32,10 +34,8 @@
         .hat-tophat-css::after { content: ''; position: absolute; top: -14px; left: 4px; width: 14px; height: 14px; background: #222; border: 1px solid #000; border-bottom: 2px solid #555; }
 
         .thread-row { border-bottom: 1px solid #ddd; padding: 12px; background: #fff; display: flex; align-items: center; position: relative; }
-        .post-time { font-size: 10px; color: #888; margin-left: 8px; font-weight: normal; }
-        .delete-btn { position: absolute; top: 10px; right: 10px; font-size: 10px; padding: 2px 6px; }
-        #profile-404 { text-align: center; padding: 60px 20px; background: white; border: 1px solid #ccc; }
-        .ceo-glow { outline: 3px solid gold !important; box-shadow: 0 0 15px gold; }
+        .post-time { font-size: 10px; color: #888; margin-left: 8px; }
+        .delete-btn { position: absolute; top: 10px; right: 10px; font-size: 10px; }
     </style>
 </head>
 <body onfocus="resetNotificationDot()">
@@ -43,79 +43,78 @@
 <header>
     <div>
         <div style="font-weight:bold; font-size: 18px;">The Robloxians</div>
-        <div class="user-info-bar" id="email-display">Not Signed In</div>
+        <div id="rank-indicator" class="header-meta">GUEST ACCESS</div>
     </div>
-    <div id="user-display">Guest</div>
+    <div id="user-display">Welcome, Visitor</div>
 </header>
-
-<div id="announcement-container"><span id="announcement-display"></span></div>
 
 <div class="main-wrapper">
     <div id="auth-view" style="text-align:center; padding:40px;">
-        <h2 style="color:#0055ff;">Sign in to The Robloxians</h2>
+        <h2 style="color:#0055ff;">Login to Account</h2>
         <input type="text" id="reg-user" placeholder="Username" style="display:block; margin:10px auto; padding:8px; width:220px;">
         <input type="email" id="auth-email" placeholder="Email" style="display:block; margin:10px auto; padding:8px; width:220px;">
         <input type="password" id="auth-pass" placeholder="Password" style="display:block; margin:10px auto; padding:8px; width:220px;">
-        <button class="btn" id="loginBtn">Login</button>
-        <button class="btn btn-submit" id="signupBtn">Sign Up</button>
+        <button class="btn btn-submit" id="loginBtn">Login</button>
+        <button class="btn" id="signupBtn">Sign Up</button>
     </div>
 
     <div id="logged-in-view" class="hidden">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
             <div id="welcome-text" style="font-weight:bold;"></div>
             <div>
                 <button class="btn" onclick="showView('forum-home')">Forum</button>
                 <button class="btn" id="myProfileBtn">My Profile</button>
-                <button class="btn btn-admin hidden" id="adminBtn">Staff Tools</button>
+                <button class="btn btn-admin hidden" id="adminBtn">STAFF TOOLS</button>
                 <button class="btn btn-danger" id="logoutBtn">Logout</button>
             </div>
         </div>
 
-        <div id="admin-panel" class="hidden" style="border: 2px solid #0055ff; padding: 15px; background: #fff; margin-bottom: 15px;">
-            <h3 style="margin:0 0 10px 0;">Staff Tools</h3>
-            <strong>Target UID:</strong> <input type="text" id="target-uid" class="auto-uid-field" placeholder="Paste UID here">
-            <br><br>
-            <strong>Moderation:</strong><br>
-            Reason: <input type="text" id="ban-reason" placeholder="Rule Violation">
-            <button class="btn btn-danger" id="applyBan">Ban User</button>
-            <button class="btn" id="applyUnban">Unban</button>
-            <hr>
-            <strong>Rank:</strong> 
-            <select id="rank-select"><option value="0">Player</option><option value="1">Mod</option><option value="2">Admin</option></select>
-            <button class="btn btn-submit" id="applyRank">Set Rank</button>
-            <hr>
-            <strong>Banner:</strong> <input type="text" id="announce-text" style="width:50%;"> <button class="btn" id="postAnnounce">Post</button>
+        <div id="admin-panel" class="hidden">
+            <h3 style="margin-top:0;">🛡️ Administration Panel</h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div style="border:1px solid #ccc; padding:10px; background:#f9f9f9;">
+                    <strong>Mod Actions</strong><br>
+                    UID: <input type="text" id="target-uid" class="auto-uid-field" placeholder="User ID"><br>
+                    Reason: <input type="text" id="ban-reason" placeholder="Rule Violation"><br>
+                    <button class="btn btn-danger" id="applyBan">BAN USER</button>
+                    <button class="btn" id="applyUnban">UNBAN</button>
+                </div>
+                <div style="border:1px solid #ccc; padding:10px; background:#f9f9f9;">
+                    <strong>Assign Permissions</strong><br>
+                    Rank: <select id="rank-select">
+                        <option value="0">Player</option>
+                        <option value="1">Moderator</option>
+                        <option value="2">Administrator</option>
+                    </select><br>
+                    <button class="btn btn-submit" id="applyRank">Update Permissions</button>
+                </div>
+            </div>
         </div>
 
         <div id="forum-home">
-            <textarea id="post-input" placeholder="What's on your mind?" style="width:100%; height: 50px;"></textarea>
+            <textarea id="post-input" placeholder="Post something to the legacy feed..." style="width:100%; height: 50px; border:1px solid #888;"></textarea>
             <button class="btn btn-submit" id="submitPost">Submit Post</button>
             <div id="thread-display" style="margin-top: 20px;"></div>
         </div>
 
         <div id="profile-view" class="hidden">
-            <div id="profile-404" class="hidden">
-                <h1 style="color:#cc0000; font-size: 48px; margin:0;">404</h1>
-                <p>Profile Restricted.</p>
-                <button class="btn btn-submit" onclick="showView('forum-home')">Home</button>
-            </div>
             <div id="profile-content" style="display:flex; background:white; padding:20px; border:1px solid #ccc; gap:30px;">
                 <div id="profile-render" style="transform: scale(1.4); margin: 20px;"></div>
                 <div style="flex-grow: 1;">
                     <h2 id="view-username" style="margin:0;">User</h2>
                     <div id="view-id" style="font-size: 10px; color:#666;">UID: 0</div>
-                    <p id="view-bio" style="border-left: 3px solid #0055ff; padding: 10px; background: #f9f9f9; min-height: 40px;">Bio...</p>
-                    
-                    <div id="customizer-box" class="hidden" style="margin-top:20px; border-top: 1px dashed #ccc; padding-top:10px;">
-                        <strong>Customize</strong><br><br>
-                        Bio: <input type="text" id="edit-bio" style="width:80%;"><br><br>
-                        Colors: Head <input type="color" id="color-h"> Torso <input type="color" id="color-t"> Legs <input type="color" id="color-l"><br><br>
+                    <p id="view-bio" style="background:#eee; padding:10px; border-left:4px solid #0055ff; min-height:40px;">Bio loading...</p>
+                    <div id="customizer-box" class="hidden">
+                        <hr>
+                        <strong>Avatar Customization</strong><br>
+                        Bio: <input type="text" id="edit-bio" style="width:80%;" maxlength="100"><br>
+                        Colors: Head <input type="color" id="color-h"> Torso <input type="color" id="color-t"> Legs <input type="color" id="color-l"><br>
                         Hat: <select id="hat-select">
                             <option value="none">None</option>
                             <option value="domino">Domino Crown</option>
                             <option value="tophat">Top Hat</option>
                         </select>
-                        <button class="btn btn-submit" id="saveProfile">Save</button>
+                        <button class="btn btn-submit" id="saveProfile">Update Profile</button>
                     </div>
                 </div>
             </div>
@@ -141,8 +140,6 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
-    const CREATOR_UID = "oJm6Z87yVpMe5YgO7G4H0vU7T9m2";
-    let firstLoad = true;
     let currentUserRank = 0;
 
     window.setNotificationDot = () => {
@@ -161,10 +158,10 @@
         let link = document.querySelector("link[rel~='icon']"); if(link) link.href = canvas.toDataURL();
     };
 
-    function createAvatarHTML(colors, isCEO, hat) {
+    function createAvatarHTML(colors, hat) {
         let hatHtml = (hat === 'domino') ? `<div class="hat-domino-css"></div>` : (hat === 'tophat' ? `<div class="hat-tophat-css"></div>` : '');
         const c = colors || {h:'#f5cd30', t:'#0d5f97', l:'#a06110'};
-        return `<div class="avatar-frame ${isCEO ? 'ceo-glow' : ''}">
+        return `<div class="avatar-frame">
             <div class="char-head" style="background:${c.h}">${hatHtml}</div>
             <div class="char-torso" style="background:${c.t}"><div class="char-arm arm-l" style="background:${c.h}"></div><div class="char-arm arm-r" style="background:${c.h}"></div></div>
             <div style="display:flex;"><div class="char-leg" style="background:${c.l}"></div><div class="char-leg" style="background:${c.l}"></div></div>
@@ -173,35 +170,35 @@
 
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            document.getElementById('email-display').innerText = user.email;
             onValue(ref(db, `users/${user.uid}`), (snap) => {
                 const data = snap.val();
-                if(data?.banned) { alert(`Banned: ${data.banReason}`); signOut(auth).then(()=>location.reload()); return; }
+                if(data?.banned) { signOut(auth).then(()=>location.reload()); return; }
                 currentUserRank = data?.rank || 0;
+                
+                // Privacy Fix: Show Rank Title instead of Email
+                const rankTitles = ["Player", "Moderator", "Administrator"];
+                document.getElementById('rank-indicator').innerText = rankTitles[currentUserRank] || "Member";
+                
                 if(currentUserRank >= 1) document.getElementById('adminBtn').classList.remove('hidden');
-                document.getElementById('welcome-text').innerText = "Hello, " + data.username;
-                document.getElementById('user-display').innerText = data.username;
+                document.getElementById('user-display').innerText = "Hello, " + data.username;
             });
 
             onValue(ref(db, 'threads'), async (s) => {
-                if (!firstLoad && document.hidden) setNotificationDot();
-                firstLoad = false;
+                if (document.hidden) setNotificationDot();
                 const display = document.getElementById('thread-display'); display.innerHTML = "";
                 const usersSnap = await get(child(ref(db), 'users'));
                 const allUsers = usersSnap.val() || {};
                 s.forEach(c => {
                     const p = c.val(); const author = allUsers[p.uid] || {};
-                    const div = document.createElement('div');
-                    div.className = 'thread-row';
-                    // DELETE LOGIC: Author OR Staff can delete
+                    const div = document.createElement('div'); div.className = 'thread-row';
                     const canDelete = (p.uid === auth.currentUser.uid || currentUserRank >= 1);
-                    const delBtn = canDelete ? `<button class="btn btn-danger delete-btn" onclick="deletePost('${c.key}')">Delete</button>` : '';
+                    const delBtn = canDelete ? `<button class="btn btn-danger delete-btn" onclick="deletePost('${c.key}')">X</button>` : '';
                     
-                    div.innerHTML = `${createAvatarHTML(author.colors, p.uid === CREATOR_UID, author.hat)}
+                    div.innerHTML = `${createAvatarHTML(author.colors, author.hat)}
                         <div style="margin-left:20px; flex-grow:1;">
-                            <strong style="color:#0055ff; cursor:pointer;" onclick="loadProfile('${p.uid}')">${author.banned ? '[Content Deleted]' : author.username}</strong>
-                            <span class="post-time">${p.timestamp ? new Date(p.timestamp).toLocaleString() : ""}</span><br>
-                            ${author.banned ? '[Content Deleted]' : p.message}
+                            <strong style="color:#0055ff; cursor:pointer;" onclick="loadProfile('${p.uid}')">${author.banned ? '[DELETED]' : author.username}</strong>
+                            <span class="post-time">${p.timestamp ? new Date(p.timestamp).toLocaleTimeString() : ""}</span><br>
+                            ${author.banned ? '[Post removed due to ban]' : p.message}
                         </div>${delBtn}`;
                     display.prepend(div);
                 });
@@ -211,27 +208,17 @@
         }
     });
 
-    window.deletePost = (key) => {
-        if(confirm("Delete this post?")) remove(ref(db, `threads/${key}`));
-    };
+    window.deletePost = (key) => { if(confirm("Permanently delete this post?")) remove(ref(db, `threads/${key}`)); };
 
     window.loadProfile = async (uid) => {
         showView('profile-view');
-        document.querySelectorAll('.auto-uid-field').forEach(i => i.value = uid);
         const snap = await get(child(ref(db), `users/${uid}`));
         const d = snap.val();
-        if(d.banned && uid !== auth.currentUser.uid) {
-            document.getElementById('profile-content').classList.add('hidden');
-            document.getElementById('profile-404').classList.remove('hidden');
-        } else {
-            document.getElementById('profile-content').classList.remove('hidden');
-            document.getElementById('profile-404').classList.add('hidden');
-            document.getElementById('view-username').innerText = d.banned ? '[Content Deleted]' : d.username;
-            document.getElementById('view-bio').innerText = d.banned ? '[Content Deleted]' : (d.bio || "Member");
-            document.getElementById('view-id').innerText = "UID: " + uid;
-            document.getElementById('profile-render').innerHTML = createAvatarHTML(d.colors, uid === CREATOR_UID, d.hat);
-            if(uid === auth.currentUser.uid) document.getElementById('customizer-box').classList.remove('hidden');
-        }
+        document.getElementById('view-username').innerText = d.username;
+        document.getElementById('view-id').innerText = "UID: " + uid;
+        document.getElementById('view-bio').innerText = d.bio || "This user is a mystery.";
+        document.getElementById('profile-render').innerHTML = createAvatarHTML(d.colors, d.hat);
+        if(uid === auth.currentUser.uid) document.getElementById('customizer-box').classList.remove('hidden');
     };
 
     document.getElementById('submitPost').onclick = () => {
@@ -240,8 +227,12 @@
         document.getElementById('post-input').value = "";
     };
 
+    // ADMIN CONTROLS
     document.getElementById('applyBan').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value}`), { banned: true, banReason: document.getElementById('ban-reason').value });
+    document.getElementById('applyUnban').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value}`), { banned: false });
     document.getElementById('applyRank').onclick = () => update(ref(db, `users/${document.getElementById('target-uid').value}`), { rank: parseInt(document.getElementById('rank-select').value) });
+    document.getElementById('adminBtn').onclick = () => document.getElementById('admin-panel').classList.toggle('hidden');
+
     document.getElementById('saveProfile').onclick = () => {
         update(ref(db, `users/${auth.currentUser.uid}`), { 
             bio: document.getElementById('edit-bio').value, 
@@ -257,15 +248,14 @@
     };
 
     document.getElementById('loginBtn').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-pass').value);
-    document.getElementById('logoutBtn').onclick = () => signOut(auth).then(()=>location.reload());
-    document.getElementById('myProfileBtn').onclick = () => loadProfile(auth.currentUser.uid);
-    document.getElementById('adminBtn').onclick = () => document.getElementById('admin-panel').classList.toggle('hidden');
     document.getElementById('signupBtn').onclick = () => {
         const u = document.getElementById('reg-user').value;
         createUserWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-pass').value).then((r) => {
-            set(ref(db, `users/${r.user.uid}`), { username: u, rank: 0, banned: false, bio: 'Member', colors: {h:'#f5cd30', t:'#0d5f97', l:'#a06110'}, hat: 'none' });
+            set(ref(db, `users/${r.user.uid}`), { username: u, rank: 0, banned: false, bio: 'Legacy Member', colors: {h:'#f5cd30', t:'#0d5f97', l:'#a06110'}, hat: 'none' });
         });
     };
+    document.getElementById('logoutBtn').onclick = () => signOut(auth).then(()=>location.reload());
+    document.getElementById('myProfileBtn').onclick = () => loadProfile(auth.currentUser.uid);
 </script>
 </body>
 </html>
