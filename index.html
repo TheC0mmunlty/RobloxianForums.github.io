@@ -9,24 +9,19 @@
         * { font-family: "MS Sans Serif", Geneva, sans-serif; -webkit-font-smoothing: none; box-sizing: border-box; }
         body { margin: 0; background: #ccc url('https://wallpapercave.com/wp/wp9084955.jpg') fixed center; background-size: cover; }
         
-        /* ORANGE GLOBAL BANNER */
-        #announcement-banner { 
-            background: #ff9800; 
-            color: #ffffff; 
-            padding: 10px; 
-            text-align: center; 
-            font-weight: bold; 
-            font-size: 14px; 
-            width: 100%; 
-            display: none;
-            border-bottom: 3px solid #e68a00;
-            z-index: 1000;
-        }
-
-        header { background: #0055ff; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #0033aa; }
+        /* HEADER STYLES */
+        header { background: #0055ff; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #0033aa; position: relative; z-index: 10; }
+        .logo-text { font-weight:bold; font-size: 18px; cursor: pointer; user-select: none; }
+        .logo-text:hover { color: #ffd700; }
         .header-meta { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #ffd700; }
         
-        /* DISCORD PING DOT */
+        /* ORANGE GLOBAL BANNER (Moved below header) */
+        #announcement-banner { 
+            background: #ff9800; color: #ffffff; padding: 8px; text-align: center; 
+            font-weight: bold; font-size: 13px; width: 100%; display: none;
+            border-bottom: 2px solid #e68a00; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
         .ping-container { position: relative; display: inline-block; }
         .ping-dot { position: absolute; top: -3px; right: -3px; width: 12px; height: 12px; background: #ff4444; border: 2px solid white; border-radius: 50%; display: none; }
 
@@ -35,44 +30,42 @@
         
         /* BUTTONS */
         .btn { background: #e1e1e1; border: 1px solid #777; padding: 4px 12px; cursor: pointer; font-size: 12px; font-weight: bold; box-shadow: inset 1px 1px #fff, inset -1px -1px #999; }
+        .btn:active { box-shadow: inset -1px -1px #fff, inset 1px 1px #999; }
         .btn-red { background: #ff4444; color: white; border: 1px solid #aa0000; }
         .btn-yellow { background: #ffcc00; color: black; border: 1px solid #ccaa00; }
 
-        /* REWORKED DOMINO CROWN (Based on Drawing) */
+        /* DOMINO CROWN (From your drawing) */
         .hat-domino { position: absolute; top: -18px; left: -8px; width: 38px; height: 22px; display: flex; gap: 2px; align-items: flex-end; }
-        .domino-piece { width: 11px; background: #000; border: 1px solid #fff; position: relative; border-radius: 1px; }
+        .domino-piece { width: 11px; background: #000; border: 1px solid #fff; position: relative; }
         .piece-1 { height: 16px; } .piece-2 { height: 22px; } .piece-3 { height: 16px; }
-        /* Domino Dots */
         .domino-piece::before { content: '::'; color: white; font-size: 8px; position: absolute; top: 1px; left: 1px; letter-spacing: 1px; }
 
-        /* AVATAR RENDER */
+        /* CHARACTER & T-SHIRT */
         .avatar-frame { width: 80px; height: 110px; position: relative; background: #eee; border: 1px solid #999; display: flex; flex-direction: column; align-items: center; margin: 10px; }
         .char-head { width: 22px; height: 22px; border: 1px solid rgba(0,0,0,0.2); z-index: 5; position: relative; margin-top: 10px; }
-        .char-torso { width: 44px; height: 44px; border: 1px solid rgba(0,0,0,0.2); position: relative; }
+        .char-torso { width: 44px; height: 44px; border: 1px solid rgba(0,0,0,0.2); position: relative; overflow: hidden; }
+        .char-tshirt-layer { position: absolute; top: 8px; left: 7px; width: 30px; height: 30px; object-fit: contain; z-index: 2; pointer-events: none; }
         .char-arm { width: 16px; height: 42px; border: 1px solid rgba(0,0,0,0.2); position: absolute; top: 0; }
         .arm-l { left: -17px; } .arm-r { right: -17px; }
         .char-leg-set { display: flex; }
         .char-leg { width: 20px; height: 44px; border: 1px solid rgba(0,0,0,0.2); }
 
-        /* INBOX LISTING */
-        .msg-item { background: white; border: 1px solid #ccc; padding: 10px; margin-bottom: 5px; position: relative; }
-        .msg-unread { border-left: 5px solid #ff4444; background: #fffcfc; }
-        .msg-sender { font-weight: bold; color: #0055ff; font-size: 12px; }
-
-        .row { border-bottom: 1px solid #ddd; padding: 15px; background: #fff; display: flex; align-items: center; position: relative; }
+        .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; }
+        .market-card { background: white; border: 1px solid #999; padding: 10px; text-align: center; font-size: 11px; }
+        .row { border-bottom: 1px solid #ddd; padding: 15px; background: #fff; display: flex; align-items: center; }
     </style>
 </head>
 <body>
 
-<div id="announcement-banner"></div>
-
 <header>
     <div>
-        <div style="font-weight:bold; font-size: 18px;">The Robloxians</div>
+        <div class="logo-text" onclick="location.reload()">The Robloxians</div>
         <div id="rank-indicator" class="header-meta">GUEST</div>
     </div>
     <div id="user-display">User: Guest</div>
 </header>
+
+<div id="announcement-banner"></div>
 
 <div class="main-wrapper">
     <div id="auth-view" style="text-align:center; padding:50px;">
@@ -87,8 +80,9 @@
     <div id="logged-in-view" class="hidden">
         <div style="display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 2px solid #ccc; padding-bottom: 10px;">
             <div style="font-weight:bold;">Level: <span id="lvl">1</span></div>
-            <div>
+            <nav>
                 <button class="btn" onclick="showView('forum-home')">Forum</button>
+                <button class="btn" onclick="showView('market-view')">Marketplace</button>
                 <div class="ping-container">
                     <button class="btn" onclick="openInbox()">Inbox</button>
                     <div id="ping-dot" class="ping-dot"></div>
@@ -96,7 +90,7 @@
                 <button class="btn" id="myProfileBtn">My Profile</button>
                 <button class="btn btn-red hidden" id="adminBtn" onclick="showView('admin-view')">ADMIN PANEL</button>
                 <button class="btn" id="logoutBtn">Logout</button>
-            </div>
+            </nav>
         </div>
 
         <div id="forum-home">
@@ -105,34 +99,14 @@
             <div id="thread-display" style="margin-top: 20px;"></div>
         </div>
 
-        <div id="inbox-view" class="hidden">
-            <h3>My Inbox</h3>
-            <div id="msg-list" style="max-height: 500px; overflow-y: auto;">
-                <p style="color: #888;">No messages yet.</p>
-            </div>
-            <button class="btn" onclick="showView('forum-home')" style="margin-top: 10px;">Back to Forum</button>
+        <div id="market-view" class="hidden">
+            <h3>Classic Marketplace</h3>
+            <div id="market-list" class="market-grid"></div>
         </div>
 
-        <div id="admin-view" class="hidden">
-            <div style="border: 2px solid #aa0000; padding: 20px; background: #fff;">
-                <h2 style="color:#aa0000; margin-top:0;">Staff Console</h2>
-                <input type="text" id="target-uid" placeholder="Target User UID" style="width: 50%;">
-                
-                <div id="admin-ranking-tools" class="hidden">
-                    <button class="btn btn-red" onclick="setRank(2)">Make Admin</button>
-                    <button class="btn btn-yellow" onclick="setRank(1)">Make Moderator</button>
-                    <button class="btn" onclick="setRank(0)">Reset Rank</button>
-                    <hr>
-                    <input type="text" id="banner-input" style="width:70%;">
-                    <button class="btn btn-yellow" onclick="updateBanner()">Set Global Banner</button>
-                </div>
-
-                <div id="mod-tools">
-                    <hr>
-                    <input type="text" id="ban-reason" placeholder="Ban Reason">
-                    <button class="btn btn-red" onclick="executeBan()">BAN USER</button>
-                </div>
-            </div>
+        <div id="inbox-view" class="hidden">
+            <h3>Inbox</h3>
+            <div id="msg-list"></div>
         </div>
 
         <div id="profile-view" class="hidden">
@@ -140,16 +114,36 @@
                 <div id="profile-render"></div>
                 <div style="flex-grow: 1;">
                     <h2><span id="v-name"></span> <span id="v-id" style="color:#888; font-size:12px;"></span></h2>
-                    <p id="v-bio" style="border:1px solid #ddd; padding:10px;"></p>
-                    <button class="btn btn-yellow" id="msgBtn">Send Message</button>
+                    
+                    <div id="uploader-section" class="hidden" style="background:#f4f4f4; padding:10px; border:1px dashed #777; margin-bottom:10px;">
+                        <strong>Upload T-Shirt</strong><br>
+                        <input type="file" id="tshirt-file" accept="image/*">
+                        <button class="btn btn-yellow" id="upload-btn">Upload (5s Delay)</button>
+                        <div id="upload-status" style="font-size:10px; color:blue;"></div>
+                    </div>
+
                     <div id="my-settings" class="hidden">
+                        <strong>My Inventory</strong>
+                        <div id="inventory-list" style="display:flex; gap:10px; padding:10px; background:#eee; min-height:50px; overflow-x:auto;"></div>
+                        <button class="btn" style="margin-top:5px;" onclick="unequipItem()">Unequip Shirt</button>
                         <hr>
-                        Head: <input type="color" id="c-head"> Torso: <input type="color" id="c-torso"> Legs: <input type="color" id="c-leg"><br>
+                        Colors: <input type="color" id="c-head"> <input type="color" id="c-torso"> <input type="color" id="c-leg"><br>
                         Hat: <select id="h-select"><option value="none">None</option><option value="domino">Domino Crown</option></select><br>
-                        Pings: <input type="checkbox" id="notif-on" checked><br>
                         <button class="btn btn-yellow" id="saveProfile" style="margin-top:10px; width:100%;">Save Profile</button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div id="admin-view" class="hidden">
+             <div style="border: 2px solid #aa0000; padding: 20px; background: #fff;">
+                <h2 style="color:#aa0000; margin-top:0;">Staff Console</h2>
+                <input type="text" id="target-uid" placeholder="Target User UID">
+                <button class="btn btn-red" onclick="setRank(2)">Admin</button>
+                <button class="btn btn-yellow" onclick="setRank(1)">Mod</button>
+                <hr>
+                <input type="text" id="banner-input" style="width:70%;">
+                <button class="btn btn-yellow" onclick="updateBanner()">Set Banner</button>
             </div>
         </div>
     </div>
@@ -158,96 +152,115 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, set, push, onValue, get, child, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, push, onValue, get, child, update, increment, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const cfg = { apiKey: "AIzaSyANfmR8j_Z7mHmSO1GNXGnIGKTdBiU6uiU", authDomain: "testingforum-669a9.firebaseapp.com", databaseURL: "https://testingforum-669a9-default-rtdb.firebaseio.com", projectId: "testingforum-669a9", storageBucket: "testingforum-669a9.firebasestorage.app", messagingSenderId: "685025117821", appId: "1:685025117821:web:c3340c8d5475e33eded314" };
     const app = initializeApp(cfg); const auth = getAuth(app); const db = getDatabase(app);
-    
-    const OWNER_UID = "YOUR_UID_HERE"; 
     let me = null;
 
-    function draw(colors, hat) {
+    function draw(colors, hat, tshirtUrl) {
         let hatHtml = (hat === 'domino') ? `<div class="hat-domino"><div class="domino-piece piece-1"></div><div class="domino-piece piece-2"></div><div class="domino-piece piece-3"></div></div>` : '';
         const c = colors || {h:'#f5cd30', t:'#0d5f97', l:'#a06110'};
-        return `<div class="avatar-frame"><div class="char-head" style="background:${c.h}">${hatHtml}</div><div class="char-torso" style="background:${c.t}"><div class="char-arm arm-l" style="background:${c.h}"></div><div class="char-arm arm-r" style="background:${c.h}"></div></div><div class="char-leg-set"><div class="char-leg" style="background:${c.l}"></div><div class="char-leg" style="background:${c.l}"></div></div></div>`;
+        const tsHtml = tshirtUrl ? `<img src="${tshirtUrl}" class="char-tshirt-layer">` : '';
+        return `<div class="avatar-frame"><div class="char-head" style="background:${c.h}">${hatHtml}</div><div class="char-torso" style="background:${c.t}">${tsHtml}<div class="char-arm arm-l" style="background:${c.h}"></div><div class="char-arm arm-r" style="background:${c.h}"></div></div><div class="char-leg-set"><div class="char-leg" style="background:${c.l}"></div><div class="char-leg" style="background:${c.l}"></div></div></div>`;
     }
 
     onAuthStateChanged(auth, (u) => {
         if (u) {
             onValue(ref(db, `users/${u.uid}`), (s) => {
-                me = s.val(); if(!me) return;
-                document.getElementById('user-display').innerText = "Logged in as: " + me.username;
+                me = s.val() || {};
+                document.getElementById('user-display').innerText = "User: " + (me.username || "Guest");
+                document.getElementById('adminBtn').classList.toggle('hidden', (me.rank || 0) < 1);
+                
                 const ind = document.getElementById('rank-indicator');
-                document.getElementById('adminBtn').classList.toggle('hidden', me.rank < 1);
-                document.getElementById('admin-ranking-tools').classList.toggle('hidden', me.rank < 2);
-                
-                if(me.rank === 2) { ind.innerText = "ADMIN"; ind.style.color = "#ff4444"; }
-                else if(me.rank === 1) { ind.innerText = "MODERATOR"; ind.style.color = "#ffff00"; }
-                else { ind.innerText = "MEMBER"; ind.style.color = "#ffd700"; }
-                
-                // RED DOT PING LOGIC
-                onValue(ref(db, `msgs/${u.uid}`), (ms) => {
-                    let hasUnread = false;
-                    ms.forEach(m => { if(!m.val().read) hasUnread = true; });
-                    document.getElementById('ping-dot').style.display = (hasUnread && me.pings !== false) ? 'block' : 'none';
-                });
-            });
+                if(me.rank === 2) ind.innerText = "ADMIN";
+                else if(me.rank === 1) ind.innerText = "MODERATOR";
+                else ind.innerText = "MEMBER";
 
+                onValue(ref(db, `msgs/${u.uid}`), (ms) => {
+                    let unread = false; ms.forEach(m => { if(!m.val().read) unread = true; });
+                    document.getElementById('ping-dot').style.display = unread ? 'block' : 'none';
+                });
+                renderForum(); renderMarket();
+            });
             onValue(ref(db, 'settings/banner'), (s) => {
                 const b = document.getElementById('announcement-banner');
                 if(s.val()) { b.innerText = s.val(); b.style.display = 'block'; } else { b.style.display = 'none'; }
             });
-
-            renderForum();
             document.getElementById('auth-view').classList.add('hidden');
             document.getElementById('logged-in-view').classList.remove('hidden');
         }
     });
 
-    // INBOX RENDERING (Fixes "Undefined" and Red Dot)
+    // INVENTORY & MARKET
+    window.buyItem = (url) => { push(ref(db, `users/${auth.currentUser.uid}/inventory`), { img: url }); alert("Got it!"); };
+    window.equipItem = (url) => update(ref(db, `users/${auth.currentUser.uid}`), { equipped: url });
+    window.unequipItem = () => update(ref(db, `users/${auth.currentUser.uid}`), { equipped: null });
+
+    window.renderMarket = () => {
+        onValue(ref(db, 'marketplace'), (s) => {
+            const list = document.getElementById('market-list');
+            list.innerHTML = "";
+            s.forEach(child => {
+                const item = child.val();
+                const div = document.createElement('div');
+                div.className = 'market-card';
+                div.innerHTML = `<img src="${item.img}" style="width:70px;"><br>By: ${item.creator}<br><button class="btn btn-yellow" onclick="buyItem('${item.img}')">FREE</button>${(me.rank >= 1) ? `<button class="btn btn-red" onclick="removeItem('${child.key}')">X</button>` : ''}`;
+                list.prepend(div);
+            });
+        });
+    };
+
+    document.getElementById('upload-btn').onclick = () => {
+        const file = document.getElementById('tshirt-file').files[0];
+        if(!file) return;
+        const status = document.getElementById('upload-status'); status.innerText = "Uploading...";
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            setTimeout(() => {
+                push(ref(db, 'marketplace'), { img: e.target.result, creator: me.username, time: Date.now() });
+                status.innerText = "Posted!";
+            }, 5000);
+        };
+        reader.readAsDataURL(file);
+    };
+
     window.openInbox = () => {
         showView('inbox-view');
         const list = document.getElementById('msg-list');
         onValue(ref(db, `msgs/${auth.currentUser.uid}`), (s) => {
             list.innerHTML = "";
-            if(!s.exists()) { list.innerHTML = "<p>No messages.</p>"; return; }
             s.forEach(child => {
                 const m = child.val();
                 const div = document.createElement('div');
-                div.className = 'msg-item' + (!m.read ? ' msg-unread' : '');
-                // Check for .text (new) or .msg (old) to avoid undefined
-                const content = m.text || m.msg || "[No content]";
-                div.innerHTML = `<div class="msg-sender">From: ${m.from}</div><div>${content}</div>`;
+                div.className = 'row';
+                const content = m.text || m.msg || "[Empty]";
+                div.innerHTML = `<strong>${m.from}:</strong> ${content}`;
                 div.onclick = () => update(ref(db, `msgs/${auth.currentUser.uid}/${child.key}`), {read: true});
                 list.prepend(div);
             });
         });
     };
 
-    window.showView = (id) => { ['forum-home', 'profile-view', 'admin-view', 'inbox-view'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); };
-
     window.loadProfile = async (uid) => {
         showView('profile-view');
-        const d = (await get(child(ref(db), `users/${uid}`))).val();
-        document.getElementById('v-name').innerText = d.username;
+        const d = (await get(child(ref(db), `users/${uid}`))).val() || {};
+        document.getElementById('v-name').innerText = d.username || "Guest";
         document.getElementById('v-id').innerText = "#" + (d.num || '0');
-        document.getElementById('v-bio').innerText = d.bio || "No bio set.";
-        document.getElementById('profile-render').innerHTML = draw(d.colors, d.hat);
-        document.getElementById('my-settings').classList.toggle('hidden', uid !== auth.currentUser.uid);
-        document.getElementById('msgBtn').onclick = () => {
-            const m = prompt("Message to " + d.username + ":");
-            if(m) push(ref(db, `msgs/${uid}`), {from: me.username, text: m, read: false, time: Date.now()});
-        };
-    };
+        document.getElementById('profile-render').innerHTML = draw(d.colors, d.hat, d.equipped);
+        
+        const isMe = uid === auth.currentUser.uid;
+        document.getElementById('my-settings').classList.toggle('hidden', !isMe);
+        document.getElementById('uploader-section').classList.toggle('hidden', !isMe);
 
-    window.setRank = (r) => { if(me.rank < 2) return; update(ref(db, `users/${document.getElementById('target-uid').value}`), {rank: r}); };
-    window.executeBan = () => { if(me.rank < 1) return; update(ref(db, `users/${document.getElementById('target-uid').value}`), {isBanned: true, banReason: document.getElementById('ban-reason').value}); };
-    window.updateBanner = (t) => { if(me.rank < 2) return; update(ref(db, 'settings'), {banner: t !== undefined ? t : document.getElementById('banner-input').value}); };
-    
-    window.deletePost = (id, authorUid) => {
-        if(me.rank >= 1) {
-            if(me.rank === 1 && authorUid === OWNER_UID) return alert("Mods cannot delete Owner posts!");
-            update(ref(db, `threads/${id}`), {deleted: true});
+        if(isMe) {
+            const invList = document.getElementById('inventory-list'); invList.innerHTML = "";
+            const invSnap = await get(ref(db, `users/${uid}/inventory`));
+            invSnap.forEach(child => {
+                const img = child.val().img;
+                const i = document.createElement('img'); i.src = img; i.style.width="40px"; i.style.cursor="pointer";
+                i.onclick = () => equipItem(img); invList.appendChild(i);
+            });
         }
     };
 
@@ -256,44 +269,36 @@
             const display = document.getElementById('thread-display'); display.innerHTML = "";
             const users = (await get(child(ref(db), 'users'))).val() || {};
             s.forEach(c => {
-                const p = c.val(); if(p.deleted && me.rank === 0) return;
-                const author = users[p.uid] || {username: "Unknown", num: 0};
+                const p = c.val();
+                const author = users[p.uid] || {};
                 const div = document.createElement('div');
-                div.className = 'row' + (p.deleted ? ' deleted-post' : '');
-                div.innerHTML = `<div style="transform:scale(0.6); width:50px;">${draw(author.colors, author.hat)}</div>
-                    <div style="margin-left:20px; flex-grow:1;">
-                        <strong onclick="window.loadProfile('${p.uid}')" style="color:#0055ff; cursor:pointer;">${author.username}</strong> <small>#${author.num}</small>
-                        <div style="font-size:13px; margin-top:5px;">${p.msg}</div>
-                    </div>
-                    ${me.rank >= 1 ? `<button class="btn btn-red" onclick="deletePost('${c.key}', '${p.uid}')">DELETE</button>` : ''}`;
+                div.className = 'row';
+                div.innerHTML = `<div style="transform:scale(0.5); width:40px;">${draw(author.colors, author.hat, author.equipped)}</div>
+                    <div style="margin-left:20px;">
+                        <strong onclick="window.loadProfile('${p.uid}')" style="cursor:pointer; color:blue;">${author.username || 'User'}</strong>
+                        <div>${p.msg}</div>
+                    </div>`;
                 display.prepend(div);
             });
         });
     };
 
-    document.getElementById('saveProfile').onclick = () => {
-        update(ref(db, `users/${auth.currentUser.uid}`), {
-            hat: document.getElementById('h-select').value,
-            colors: { h: document.getElementById('c-head').value, t: document.getElementById('c-torso').value, l: document.getElementById('c-leg').value },
-            pings: document.getElementById('notif-on').checked
-        }).then(() => alert("Saved!"));
-    };
-
+    window.setRank = (r) => update(ref(db, `users/${document.getElementById('target-uid').value}`), {rank: r});
+    window.updateBanner = () => update(ref(db, 'settings'), {banner: document.getElementById('banner-input').value});
+    window.removeItem = (k) => remove(ref(db, `marketplace/${k}`));
+    window.showView = (id) => { ['forum-home', 'profile-view', 'admin-view', 'inbox-view', 'market-view'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); };
+    document.getElementById('saveProfile').onclick = () => update(ref(db, `users/${auth.currentUser.uid}`), { hat: document.getElementById('h-select').value, colors: { h: document.getElementById('c-head').value, t: document.getElementById('c-torso').value, l: document.getElementById('c-leg').value } }).then(() => alert("Saved!"));
     document.getElementById('signupBtn').onclick = async () => {
         const u = document.getElementById('reg-user').value;
         const countSnap = await get(ref(db, 'stats/uCount'));
         const newNum = (countSnap.val() || 0) + 1;
         createUserWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-pass').value).then(r => {
-            set(ref(db, `users/${r.user.uid}`), { username: u, rank: 0, num: newNum, colors: {h:'#f5cd30', t:'#0d5f97', l:'#a06110'}, pings: true, hat: 'none' });
+            set(ref(db, `users/${r.user.uid}`), { username: u, rank: 0, num: newNum, colors: {h:'#f5cd30', t:'#0d5f97', l:'#a06110'}, hat: 'none' });
             update(ref(db, 'stats'), { uCount: increment(1) });
         });
     };
-
     document.getElementById('loginBtn').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-pass').value);
-    document.getElementById('submitPost').onclick = () => { 
-        const m = document.getElementById('post-input').value;
-        if(m.trim()) { push(ref(db, 'threads'), {msg: m, uid: auth.currentUser.uid, time: Date.now()}); document.getElementById('post-input').value = ""; }
-    };
+    document.getElementById('submitPost').onclick = () => { push(ref(db, 'threads'), {msg: document.getElementById('post-input').value, uid: auth.currentUser.uid}); document.getElementById('post-input').value = ""; };
     document.getElementById('myProfileBtn').onclick = () => window.loadProfile(auth.currentUser.uid);
     document.getElementById('logoutBtn').onclick = () => signOut(auth).then(()=>location.reload());
 </script>
