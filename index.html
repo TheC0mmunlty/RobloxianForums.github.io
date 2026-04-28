@@ -22,7 +22,6 @@
         .avatar-frame { width: 80px; height: 110px; position: relative; background: #eee; border: 1px solid #999; display: flex; flex-direction: column; align-items: center; margin: 10px; }
         .char-head { width: 22px; height: 22px; border: 1px solid rgba(0,0,0,0.2); z-index: 5; position: relative; margin-top: 10px; }
         .hat-goldcrown { position: absolute; top: -12px; left: -2px; width: 26px; height: 12px; background: #ffd700; z-index: 12; border: 1px solid #b8860b; clip-path: polygon(0% 100%, 0% 0%, 25% 50%, 50% 0%, 75% 50%, 100% 0%, 100% 100%); }
-        .hat-goldcrown::after { content: ''; position: absolute; bottom: -2px; left: -1px; width: 26px; height: 3px; background: #b8860b; }
         .hat-domino { position: absolute; top: -14px; left: -9px; width: 40px; height: 28px; z-index: 10; pointer-events: none; }
         .hat-tophat { position: absolute; top: -16px; left: 1px; width: 20px; height: 16px; background: #222; z-index: 10; border-bottom: 2px solid #444; }
         .hat-tophat::before { content: ''; position: absolute; bottom: -2px; left: -4px; width: 28px; height: 4px; background: #222; border-radius: 2px; }
@@ -102,7 +101,7 @@
                 <button class="btn btn-red" onclick="clearInbox()">Clear Inbox</button>
             </div>
             <div style="margin-bottom: 15px; border-bottom: 1px dashed #999; padding-bottom: 10px;">
-                <strong>Send Message:</strong><br>
+                <strong>Send Message (DM):</strong><br>
                 <input type="text" id="msg-to" placeholder="Recipient UID" style="width: 250px;">
                 <input type="text" id="msg-body" placeholder="Message content..." style="width: 300px;">
                 <button class="btn btn-yellow" id="sendMsgBtn">Send</button>
@@ -149,8 +148,11 @@
                             <option value="tophat">Top Hat</option>
                             <option id="gold-crown-opt" value="goldcrown" class="hidden">Gold Crown (OWNER)</option>
                         </select><br>
-                        Colors: <input type="color" id="c-head"> <input type="color" id="c-torso"> <input type="color" id="c-leg"><br>
-                        <button class="btn btn-red" onclick="unequipShirt()">Unequip Shirt</button><br>
+                        <strong>Colors:</strong><br>
+                        Head: <input type="color" id="c-head"> 
+                        Torso: <input type="color" id="c-torso"> 
+                        Legs: <input type="color" id="c-leg"><br>
+                        <button class="btn btn-red" onclick="unequipShirt()" style="margin-top:5px;">Unequip Shirt</button><br>
                         <button class="btn btn-yellow" id="saveProfile" style="margin-top:10px;">Save Changes</button>
                     </div>
                 </div>
@@ -259,6 +261,7 @@
         const dS = await get(child(ref(db), `users/${uid}`));
         const d = dS.val() || {};
         document.getElementById('v-name').innerText = d.username || "Unknown";
+        document.getElementById('v-check').innerHTML = d.verified ? '<span class="verified-badge"></span>' : '';
         document.getElementById('v-id').innerText = "UID: " + uid;
         document.getElementById('v-bio').innerText = d.bio || "No bio yet.";
         document.getElementById('profile-render').innerHTML = draw(d.colors, d.hat, d.equipped);
@@ -270,6 +273,17 @@
         document.getElementById('my-settings').classList.toggle('hidden', !isMe);
         document.getElementById('uploader-section').classList.toggle('hidden', !isMe);
         document.getElementById('profile-actions').classList.toggle('hidden', isMe);
+
+        if(isMe) {
+            document.getElementById('edit-bio').value = d.bio || "";
+            document.getElementById('msg-privacy').value = d.msgPrivacy || "on";
+            document.getElementById('h-select').value = d.hat || "none";
+            if(d.colors) {
+                document.getElementById('c-head').value = d.colors.h || "#f5cd30";
+                document.getElementById('c-torso').value = d.colors.t || "#0d5f97";
+                document.getElementById('c-leg').value = d.colors.l || "#a06110";
+            }
+        }
 
         const isFriend = d.friends && d.friends[auth.currentUser.uid];
         document.getElementById('addFriendBtn').classList.toggle('hidden', !!isFriend);
@@ -288,7 +302,7 @@
     };
 
     window.replyToUser = (targetUid) => {
-        if(!targetUid || targetUid === "undefined") return alert("Error: User UID not found.");
+        if(!targetUid || targetUid === "undefined" || targetUid === "null") return alert("Error: User UID not found.");
         showView('inbox-view');
         document.getElementById('msg-to').value = targetUid;
         document.getElementById('msg-body').focus();
