@@ -28,9 +28,7 @@
             background: #ffd700; z-index: 12; border: 1px solid #b8860b;
             clip-path: polygon(0% 100%, 0% 0%, 25% 50%, 50% 0%, 75% 50%, 100% 0%, 100% 100%);
         }
-        .hat-goldcrown::after {
-            content: ''; position: absolute; bottom: -2px; left: -1px; width: 26px; height: 3px; background: #b8860b;
-        }
+        .hat-goldcrown::after { content: ''; position: absolute; bottom: -2px; left: -1px; width: 26px; height: 3px; background: #b8860b; }
 
         .hat-domino { position: absolute; top: -14px; left: -9px; width: 40px; height: 28px; z-index: 10; pointer-events: none; }
         .hat-tophat { position: absolute; top: -16px; left: 1px; width: 20px; height: 16px; background: #222; z-index: 10; border-bottom: 2px solid #444; }
@@ -47,6 +45,7 @@
         .market-card { background: white; border: 1px solid #999; padding: 10px; text-align: center; font-size: 11px; }
         .row { border-bottom: 1px solid #ddd; padding: 15px; background: #fff; display: flex; align-items: center; position: relative; }
         .delete-btn { position: absolute; right: 10px; top: 10px; color: red; font-size: 10px; cursor: pointer; font-weight: bold; }
+        .msg-box { border: 1px solid #999; padding: 10px; margin-bottom: 10px; background: #fff; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -95,8 +94,14 @@
         </div>
 
         <div id="inbox-view" class="hidden">
-            <h3>Messages</h3>
-            <div id="message-display" style="background:#fff; border:1px solid #999; min-height:200px; padding:10px;"></div>
+            <h3>Inbox</h3>
+            <div style="margin-bottom: 15px; border-bottom: 1px dashed #999; padding-bottom: 10px;">
+                <strong>Send Message:</strong><br>
+                <input type="text" id="msg-to" placeholder="Recipient UID" style="width: 200px;">
+                <input type="text" id="msg-body" placeholder="Message content..." style="width: 300px;">
+                <button class="btn btn-yellow" id="sendMsgBtn">Send</button>
+            </div>
+            <div id="message-display"></div>
         </div>
 
         <div id="profile-view" class="hidden">
@@ -104,6 +109,16 @@
                 <div id="profile-render"></div>
                 <div style="flex-grow: 1;">
                     <h2><span id="v-name"></span><span id="v-check"></span> <span id="v-id" style="color:#888; font-size:12px;"></span></h2>
+                    
+                    <p id="v-bio" style="font-style: italic; background: #f9f9f9; padding: 10px; border: 1px solid #eee;"></p>
+
+                    <div id="profile-actions" class="hidden" style="margin-bottom: 10px;">
+                        <button class="btn btn-yellow" id="addFriendBtn">Add Friend</button>
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <strong>Friends:</strong> <span id="v-friends">None</span>
+                    </div>
                     
                     <div id="uploader-section" class="hidden">
                         <hr>
@@ -114,7 +129,8 @@
 
                     <div id="my-settings" class="hidden">
                         <hr>
-                        <strong>Appearance</strong><br>
+                        <strong>Settings</strong><br>
+                        Bio: <input type="text" id="edit-bio" style="width: 100%; margin-bottom: 5px;" placeholder="About me..."><br>
                         Hat: <select id="h-select">
                             <option value="none">None</option>
                             <option value="domino">Domino Crown</option>
@@ -158,25 +174,19 @@
     const cfg = { apiKey: "AIzaSyANfmR8j_Z7mHmSO1GNXGnIGKTdBiU6uiU", authDomain: "testingforum-669a9.firebaseapp.com", databaseURL: "https://testingforum-669a9-default-rtdb.firebaseio.com", projectId: "testingforum-669a9", storageBucket: "testingforum-669a9.firebasestorage.app", messagingSenderId: "685025117821", appId: "1:685025117821:web:c3340c8d5475e33eded314" };
     const app = initializeApp(cfg); const auth = getAuth(app); const db = getDatabase(app);
     let me = null;
+    let viewingUid = null;
 
     function draw(colors, hat, tshirtUrl) {
         let h = '';
         if(hat === 'domino') h = `<img src="https://i.imgur.com/e2aPq6G.png" class="hat-domino">`;
         else if(hat === 'tophat') h = `<div class="hat-tophat"></div>`;
         else if(hat === 'goldcrown') h = `<div class="hat-goldcrown"></div>`; 
-        
         const c = colors || {h:'#f5cd30', t:'#0d5f97', l:'#a06110'};
         return `<div class="avatar-frame">
             <div class="char-head" style="background:${c.h}">${h}</div>
-            <div class="char-torso" style="background:${c.t}">
-                ${tshirtUrl ? `<img src="${tshirtUrl}" class="tshirt-layer">` : ''}
-                <div class="char-arm arm-l" style="background:${c.h}"></div>
-                <div class="char-arm arm-r" style="background:${c.h}"></div>
-            </div>
-            <div class="char-leg-set">
-                <div class="char-leg" style="background:${c.l}"></div>
-                <div class="char-leg" style="background:${c.l}"></div>
-            </div>
+            <div class="char-torso" style="background:${c.t}">${tshirtUrl ? `<img src="${tshirtUrl}" class="tshirt-layer">` : ''}
+                <div class="char-arm arm-l" style="background:${c.h}"></div><div class="char-arm arm-r" style="background:${c.h}"></div></div>
+            <div class="char-leg-set"><div class="char-leg" style="background:${c.l}"></div><div class="char-leg" style="background:${c.l}"></div></div>
         </div>`;
     }
 
@@ -192,8 +202,11 @@
                 const ind = document.getElementById('rank-indicator');
                 ind.innerText = me.rank === 2 ? "ADMIN" : (me.rank === 1 ? "MOD" : "USER");
                 ind.style.color = me.rank === 2 ? "#ff4444" : (me.rank === 1 ? "#00ff00" : "#ffd700");
-                renderForum(); renderMarket();
+                renderMessages();
             });
+            // Optimization: Listeners only run once or on change, not on input
+            onValue(ref(db, 'threads'), (s) => renderForum(s));
+            onValue(ref(db, 'marketplace'), (s) => renderMarket(s));
             onValue(ref(db, 'settings/banner'), (s) => {
                 const b = document.getElementById('announcement-banner');
                 if(s.val()) { b.innerText = s.val(); b.style.display = 'block'; }
@@ -204,7 +217,81 @@
         }
     });
 
-    // FILE UPLOADER
+    window.renderMarket = (snapshot) => {
+        const list = document.getElementById('market-list'); list.innerHTML = "";
+        snapshot.forEach(c => {
+            const item = c.val();
+            const div = document.createElement('div'); div.className = 'market-card';
+            div.innerHTML = `<img src="${item.img}" style="width:60px; height:60px; object-fit:contain;"><br>By: ${item.creator}<br><button class="btn btn-yellow" onclick="buyItem('${item.img}')">EQUIP</button>`;
+            list.prepend(div);
+        });
+    };
+
+    window.renderForum = async (snapshot) => {
+        const display = document.getElementById('thread-display'); display.innerHTML = "";
+        const usersS = await get(child(ref(db), 'users'));
+        const users = usersS.val() || {};
+        snapshot.forEach(c => {
+            const p = c.val(); const author = users[p.uid] || {};
+            const div = document.createElement('div'); div.className = 'row';
+            let delBtn = (me && me.rank >= 1) ? `<span class="delete-btn" onclick="deletePost('${c.key}')">[DELETE]</span>` : '';
+            div.innerHTML = `${delBtn}
+                <div style="transform:scale(0.5); width:40px;">${draw(author.colors, author.hat, author.equipped)}</div>
+                <div style="margin-left:20px;">
+                    <strong onclick="window.loadProfile('${p.uid}')" style="cursor:pointer; color:blue;">${author.username}${author.verified?'<span class="verified-badge"></span>':''}</strong>
+                    <div>${p.msg}</div>
+                </div>`;
+            display.prepend(div);
+        });
+    };
+
+    window.loadProfile = async (uid) => {
+        viewingUid = uid;
+        showView('profile-view');
+        const dS = await get(child(ref(db), `users/${uid}`));
+        const d = dS.val() || {};
+        document.getElementById('v-name').innerText = d.username || "Unknown";
+        document.getElementById('v-id').innerText = "#" + uid.substring(0,5);
+        document.getElementById('v-bio').innerText = d.bio || "No bio yet.";
+        document.getElementById('profile-render').innerHTML = draw(d.colors, d.hat, d.equipped);
+        
+        // Friends
+        const friends = d.friends ? Object.values(d.friends).join(", ") : "None";
+        document.getElementById('v-friends').innerText = friends;
+
+        const isMe = uid === auth.currentUser.uid;
+        document.getElementById('my-settings').classList.toggle('hidden', !isMe);
+        document.getElementById('uploader-section').classList.toggle('hidden', !isMe);
+        document.getElementById('profile-actions').classList.toggle('hidden', isMe);
+    };
+
+    document.getElementById('addFriendBtn').onclick = () => {
+        if(!viewingUid) return;
+        update(ref(db, `users/${viewingUid}/friends`), { [auth.currentUser.uid]: me.username });
+        alert("Friend Request Sent (Added automatically for this demo)");
+    };
+
+    function renderMessages() {
+        onValue(ref(db, `msgs/${auth.currentUser.uid}`), (s) => {
+            const display = document.getElementById('message-display'); display.innerHTML = "";
+            s.forEach(c => {
+                const m = c.val();
+                display.innerHTML += `<div class="msg-box"><strong>From ${m.from}:</strong><br>${m.msg}</div>`;
+            });
+        });
+    }
+
+    document.getElementById('sendMsgBtn').onclick = () => {
+        const to = document.getElementById('msg-to').value;
+        const body = document.getElementById('msg-body').value;
+        if(to && body) {
+            push(ref(db, `msgs/${to}`), { from: me.username, msg: body });
+            alert("Sent!");
+            document.getElementById('msg-body').value = "";
+        }
+    };
+
+    // OLD UPLOADER SYSTEM
     document.getElementById('upload-btn').onclick = () => {
         const file = document.getElementById('tshirt-file-input').files[0];
         if(!file) return alert("Select a file first");
@@ -221,100 +308,27 @@
         reader.readAsDataURL(file);
     };
 
-    window.buyItem = (url) => {
-        update(ref(db, `users/${auth.currentUser.uid}`), { equipped: url });
-        alert("Equipped!");
-    };
-
-    window.unequipShirt = () => {
-        update(ref(db, `users/${auth.currentUser.uid}`), { equipped: "" });
-        alert("Unequipped!");
-    };
-
-    window.renderMarket = () => {
-        onValue(ref(db, 'marketplace'), (s) => {
-            const list = document.getElementById('market-list'); list.innerHTML = "";
-            s.forEach(c => {
-                const item = c.val();
-                const div = document.createElement('div'); div.className = 'market-card';
-                div.innerHTML = `<img src="${item.img}" style="width:60px; height:60px; object-fit:contain;"><br>By: ${item.creator}<br><button class="btn btn-yellow" onclick="buyItem('${item.img}')">EQUIP</button>`;
-                list.prepend(div);
-            });
-        });
-    };
-
-    const renderForum = () => {
-        onValue(ref(db, 'threads'), async (s) => {
-            const display = document.getElementById('thread-display'); display.innerHTML = "";
-            const users = (await get(child(ref(db), 'users'))).val() || {};
-            s.forEach(c => {
-                const p = c.val(); const author = users[p.uid] || {};
-                const div = document.createElement('div'); div.className = 'row';
-                let delBtn = (me.rank >= 1) ? `<span class="delete-btn" onclick="deletePost('${c.key}')">[DELETE]</span>` : '';
-                div.innerHTML = `${delBtn}
-                    <div style="transform:scale(0.5); width:40px;">${draw(author.colors, author.hat, author.equipped)}</div>
-                    <div style="margin-left:20px;">
-                        <strong onclick="window.loadProfile('${p.uid}')" style="cursor:pointer; color:blue;">${author.username}${author.verified?'<span class="verified-badge"></span>':''}</strong>
-                        <div>${p.msg}</div>
-                    </div>`;
-                display.prepend(div);
-            });
-        });
-    };
-
     window.deletePost = (key) => { if(confirm("Remove post?")) remove(ref(db, `threads/${key}`)); };
-
-    window.loadProfile = async (uid) => {
-        showView('profile-view');
-        const d = (await get(child(ref(db), `users/${uid}`))).val() || {};
-        document.getElementById('v-name').innerText = d.username || "Unknown";
-        document.getElementById('profile-render').innerHTML = draw(d.colors, d.hat, d.equipped);
-        const isMe = uid === auth.currentUser.uid;
-        document.getElementById('my-settings').classList.toggle('hidden', !isMe);
-        document.getElementById('uploader-section').classList.toggle('hidden', !isMe);
-    };
-
-    // STAFF FUNCTIONS
-    window.banUser = () => {
-        const uid = document.getElementById('target-uid').value;
-        const reason = document.getElementById('ban-reason').value || "No reason";
-        const limit = document.getElementById('ban-limit').value || "999";
-        update(ref(db, `users/${uid}`), { isBanned: true, banReason: reason, banLimit: limit });
-    };
-
-    window.setRank = (r) => {
-        const uid = document.getElementById('target-uid').value;
-        if(uid) update(ref(db, `users/${uid}`), { rank: r });
-    };
-
-    window.setBanner = () => {
-        set(ref(db, 'settings/banner'), document.getElementById('banner-text').value);
-    };
-
-    window.toggleVerified = async () => {
-        const uid = document.getElementById('target-uid').value;
-        if(uid) {
-            const s = await get(ref(db, `users/${uid}/verified`));
-            update(ref(db, `users/${uid}`), { verified: !s.val() });
-        }
-    };
+    window.buyItem = (url) => { update(ref(db, `users/${auth.currentUser.uid}`), { equipped: url }); alert("Equipped!"); };
+    window.unequipShirt = () => { update(ref(db, `users/${auth.currentUser.uid}`), { equipped: "" }); alert("Unequipped!"); };
+    window.banUser = () => { const uid = document.getElementById('target-uid').value; const r = document.getElementById('ban-reason').value; const l = document.getElementById('ban-limit').value; update(ref(db, `users/${uid}`), { isBanned: true, banReason: r, banLimit: l }); };
+    window.setRank = (r) => { const uid = document.getElementById('target-uid').value; if(uid) update(ref(db, `users/${uid}`), { rank: r }); };
+    window.setBanner = () => { set(ref(db, 'settings/banner'), document.getElementById('banner-text').value); };
+    window.toggleVerified = async () => { const uid = document.getElementById('target-uid').value; if(uid) { const s = await get(ref(db, `users/${uid}/verified`)); update(ref(db, `users/${uid}`), { verified: !s.val() }); } };
 
     window.showView = (id) => { 
         ['forum-home', 'profile-view', 'admin-view', 'market-view', 'inbox-view'].forEach(v => document.getElementById(v).classList.add('hidden')); 
         document.getElementById(id).classList.remove('hidden'); 
     };
 
-    document.getElementById('saveProfile').onclick = () => update(ref(db, `users/${auth.currentUser.uid}`), { hat: document.getElementById('h-select').value, colors: { h: document.getElementById('c-head').value, t: document.getElementById('c-torso').value, l: document.getElementById('c-leg').value } });
-    document.getElementById('submitPost').onclick = () => { push(ref(db, 'threads'), {msg: document.getElementById('post-input').value, uid: auth.currentUser.uid}); document.getElementById('post-input').value = ""; };
+    document.getElementById('saveProfile').onclick = () => update(ref(db, `users/${auth.currentUser.uid}`), { bio: document.getElementById('edit-bio').value, hat: document.getElementById('h-select').value, colors: { h: document.getElementById('c-head').value, t: document.getElementById('c-torso').value, l: document.getElementById('c-leg').value } });
+    document.getElementById('submitPost').onclick = () => { if(document.getElementById('post-input').value.trim() == "") return; push(ref(db, 'threads'), {msg: document.getElementById('post-input').value, uid: auth.currentUser.uid}); document.getElementById('post-input').value = ""; };
     document.getElementById('myProfileBtn').onclick = () => window.loadProfile(auth.currentUser.uid);
     document.getElementById('logoutBtn').onclick = () => signOut(auth).then(()=>location.reload());
-
     document.getElementById('signupBtn').onclick = async () => {
         const u = document.getElementById('reg-user').value;
-        const e = document.getElementById('auth-email').value;
-        const p = document.getElementById('auth-pass').value;
-        const r = await createUserWithEmailAndPassword(auth, e, p);
-        await set(ref(db, `users/${r.user.uid}`), { username: u, rank: 0, colors: {h:'#f5cd30', t:'#0d5f97', l:'#a06110'}, hat: 'none' });
+        const r = await createUserWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-pass').value);
+        await set(ref(db, `users/${r.user.uid}`), { username: u, rank: 0, colors: {h:'#f5cd30', t:'#0d5f97', l:'#a06110'}, hat: 'none', bio: "I'm new here!" });
     };
     document.getElementById('loginBtn').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-pass').value);
 </script>
