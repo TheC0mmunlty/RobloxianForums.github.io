@@ -86,7 +86,7 @@
         <div id="forum-home">
             <textarea id="post-input" placeholder="Say something..." style="width:100%; height: 60px;"></textarea>
             <button class="btn btn-yellow" id="submitPost" style="width:100%; margin-top:5px;">Post</button>
-            <div id="thread-display"></div>
+            <div id="thread-display" style="margin-top: 20px;"></div>
         </div>
 
         <div id="market-view" class="hidden">
@@ -96,7 +96,7 @@
 
         <div id="inbox-view" class="hidden">
             <h3>Messages</h3>
-            <div id="message-display"></div>
+            <div id="message-display" style="background:#fff; border:1px solid #999; min-height:200px; padding:10px;"></div>
         </div>
 
         <div id="profile-view" class="hidden">
@@ -107,14 +107,14 @@
                     
                     <div id="uploader-section" class="hidden">
                         <hr>
-                        <strong>Upload T-Shirt</strong><br>
-                        <input type="file" id="tshirt-file-input" accept="image/*" style="font-size:11px; margin: 5px 0;"><br>
-                        <button class="btn btn-yellow" id="upload-btn">Upload to Market (5s)</button>
+                        <strong>Upload T-Shirt (File)</strong><br>
+                        <input type="file" id="tshirt-file-input" accept="image/*" style="margin: 5px 0;"><br>
+                        <button class="btn btn-yellow" id="upload-btn">Upload (5s delay)</button>
                     </div>
 
                     <div id="my-settings" class="hidden">
                         <hr>
-                        <strong>Customization</strong><br>
+                        <strong>Appearance</strong><br>
                         Hat: <select id="h-select">
                             <option value="none">None</option>
                             <option value="domino">Domino Crown</option>
@@ -122,8 +122,8 @@
                             <option id="gold-crown-opt" value="goldcrown" class="hidden">Gold Crown (OWNER)</option>
                         </select><br>
                         Colors: <input type="color" id="c-head"> <input type="color" id="c-torso"> <input type="color" id="c-leg"><br>
-                        <button class="btn btn-red" onclick="unequipShirt()" style="margin-top:5px;">Unequip T-Shirt</button><br>
-                        <button class="btn btn-yellow" id="saveProfile" style="margin-top:10px;">Save Character</button>
+                        <button class="btn btn-red" onclick="unequipShirt()">Unequip Shirt</button><br>
+                        <button class="btn btn-yellow" id="saveProfile" style="margin-top:10px;">Save Changes</button>
                     </div>
                 </div>
             </div>
@@ -131,10 +131,20 @@
 
         <div id="admin-view" class="hidden">
             <div style="border: 2px solid #aa0000; padding: 20px; background: #fff;">
-                <h2 style="color:#aa0000;">Staff Panel</h2>
-                <input type="text" id="target-uid" placeholder="User UID"><br>
-                <button class="btn btn-red" onclick="banUser()">BAN</button>
-                <button class="btn btn-yellow" onclick="toggleVerified()">VERIFY</button>
+                <h2 style="color:#aa0000;">Staff Control Panel</h2>
+                <input type="text" id="target-uid" placeholder="User UID" style="width: 250px; padding: 5px;"><br><br>
+                <input type="text" id="ban-reason" placeholder="Ban Reason" style="width: 200px; padding: 5px;">
+                <input type="number" id="ban-limit" placeholder="Ban Limit (Days)" style="width: 100px; padding: 5px;"><br><br>
+                <button class="btn btn-red" onclick="banUser()">BAN USER</button>
+                <button class="btn btn-yellow" onclick="toggleVerified()">TOGGLE VERIFIED</button>
+                <div id="rank-tools">
+                    <button class="btn" onclick="setRank(2)">PROMOTE TO ADMIN</button>
+                    <button class="btn" onclick="setRank(1)">PROMOTE TO MODERATOR</button>
+                </div>
+                <hr>
+                <strong>Global Banner:</strong><br>
+                <input type="text" id="banner-text" placeholder="Banner message..." style="width:300px;">
+                <button class="btn btn-yellow" onclick="setBanner()">Set Global Banner</button>
             </div>
         </div>
     </div>
@@ -178,33 +188,34 @@
                 if(me.isBanned) { signOut(auth); location.reload(); return; }
                 document.getElementById('user-display').innerText = "Logged in as: " + (me.username || "Guest");
                 document.getElementById('adminBtn').classList.toggle('hidden', (me.rank || 0) < 1);
+                document.getElementById('rank-tools').classList.toggle('hidden', me.rank < 2);
                 const ind = document.getElementById('rank-indicator');
                 ind.innerText = me.rank === 2 ? "ADMIN" : (me.rank === 1 ? "MOD" : "USER");
+                ind.style.color = me.rank === 2 ? "#ff4444" : (me.rank === 1 ? "#00ff00" : "#ffd700");
                 renderForum(); renderMarket();
+            });
+            onValue(ref(db, 'settings/banner'), (s) => {
+                const b = document.getElementById('announcement-banner');
+                if(s.val()) { b.innerText = s.val(); b.style.display = 'block'; }
+                else b.style.display = 'none';
             });
             document.getElementById('auth-view').classList.add('hidden');
             document.getElementById('logged-in-view').classList.remove('hidden');
         }
     });
 
-    // RESTORED OLD FILE UPLOADER LOGIC
+    // FILE UPLOADER
     document.getElementById('upload-btn').onclick = () => {
         const file = document.getElementById('tshirt-file-input').files[0];
         if(!file) return alert("Select a file first");
-        
         const reader = new FileReader();
         document.getElementById('upload-btn').innerText = "Uploading...";
-        
         reader.onloadend = () => {
-            const base64String = reader.result;
+            const base64 = reader.result;
             setTimeout(() => {
-                push(ref(db, 'marketplace'), { 
-                    img: base64String, 
-                    creator: me.username, 
-                    uid: auth.currentUser.uid 
-                });
-                document.getElementById('upload-btn').innerText = "Upload to Market (5s)";
-                alert("T-Shirt Live!");
+                push(ref(db, 'marketplace'), { img: base64, creator: me.username, uid: auth.currentUser.uid });
+                document.getElementById('upload-btn').innerText = "Upload (5s delay)";
+                alert("Sent to Marketplace!");
             }, 5000);
         };
         reader.readAsDataURL(file);
@@ -217,6 +228,7 @@
 
     window.unequipShirt = () => {
         update(ref(db, `users/${auth.currentUser.uid}`), { equipped: "" });
+        alert("Unequipped!");
     };
 
     window.renderMarket = () => {
@@ -238,16 +250,19 @@
             s.forEach(c => {
                 const p = c.val(); const author = users[p.uid] || {};
                 const div = document.createElement('div'); div.className = 'row';
-                div.innerHTML = `
+                let delBtn = (me.rank >= 1) ? `<span class="delete-btn" onclick="deletePost('${c.key}')">[DELETE]</span>` : '';
+                div.innerHTML = `${delBtn}
                     <div style="transform:scale(0.5); width:40px;">${draw(author.colors, author.hat, author.equipped)}</div>
                     <div style="margin-left:20px;">
-                        <strong onclick="window.loadProfile('${p.uid}')" style="cursor:pointer; color:blue;">${author.username || 'User'}</strong>
+                        <strong onclick="window.loadProfile('${p.uid}')" style="cursor:pointer; color:blue;">${author.username}${author.verified?'<span class="verified-badge"></span>':''}</strong>
                         <div>${p.msg}</div>
                     </div>`;
                 display.prepend(div);
             });
         });
     };
+
+    window.deletePost = (key) => { if(confirm("Remove post?")) remove(ref(db, `threads/${key}`)); };
 
     window.loadProfile = async (uid) => {
         showView('profile-view');
@@ -257,6 +272,31 @@
         const isMe = uid === auth.currentUser.uid;
         document.getElementById('my-settings').classList.toggle('hidden', !isMe);
         document.getElementById('uploader-section').classList.toggle('hidden', !isMe);
+    };
+
+    // STAFF FUNCTIONS
+    window.banUser = () => {
+        const uid = document.getElementById('target-uid').value;
+        const reason = document.getElementById('ban-reason').value || "No reason";
+        const limit = document.getElementById('ban-limit').value || "999";
+        update(ref(db, `users/${uid}`), { isBanned: true, banReason: reason, banLimit: limit });
+    };
+
+    window.setRank = (r) => {
+        const uid = document.getElementById('target-uid').value;
+        if(uid) update(ref(db, `users/${uid}`), { rank: r });
+    };
+
+    window.setBanner = () => {
+        set(ref(db, 'settings/banner'), document.getElementById('banner-text').value);
+    };
+
+    window.toggleVerified = async () => {
+        const uid = document.getElementById('target-uid').value;
+        if(uid) {
+            const s = await get(ref(db, `users/${uid}/verified`));
+            update(ref(db, `users/${uid}`), { verified: !s.val() });
+        }
     };
 
     window.showView = (id) => { 
